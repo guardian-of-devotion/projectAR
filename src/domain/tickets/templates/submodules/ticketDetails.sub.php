@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * updated by
+ * @author Regina Sharaeva
+ */ 
 $ticket = $this->get('ticket');
 $remainingHours = $this->get('remainingHours');
 $statusLabels = $this->get('statusLabels');

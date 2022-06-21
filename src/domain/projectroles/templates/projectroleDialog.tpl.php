@@ -1,4 +1,8 @@
 <?php
+  
+  /**
+   * @author Regina Sharaeva
+   */
   $currentProjectrole = $this->get('projectrole');
   $leads = $this->get('leads');
 ?>

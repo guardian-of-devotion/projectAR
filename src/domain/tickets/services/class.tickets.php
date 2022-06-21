@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * updated by
+ * @author Regina Sharaeva
+ */ 
 namespace leantime\domain\services {
 
     use leantime\core;
@@ -292,6 +296,10 @@ namespace leantime\domain\services {
 
         }
 
+
+        /**
+         * @author Regina Sharaeva
+         */
         public function addTicket($values, $newMarkers=null, $relatedMarkers=null, $relatedTickets=null)
         {
             $addedTickets = [];
@@ -324,7 +332,12 @@ namespace leantime\domain\services {
             }
             return $addedTickets;
         }
-                            
+        
+
+        /**
+         * updated by
+         * @author Regina Sharaeva
+         */                    
         public function addTicketData($values, $marker, $flag=false)
         {
             $values = array(
@@ -382,6 +395,10 @@ namespace leantime\domain\services {
             }
         }
 
+
+        /**
+         * @author Regina Sharaeva
+         */
         public function updateRelatedTicket($relatedMarkers, $relatedTickets)
         {
             foreach ($relatedMarkers as $marker => $relatedId) {
@@ -420,6 +437,7 @@ namespace leantime\domain\services {
          *
          * @access public
          * @return array
+         * @author Regina Sharaeva
          */
         public function assignUser($markerId, $user, $relatedTicket, $flag=null)
         {
@@ -455,6 +473,10 @@ namespace leantime\domain\services {
             }                
         }
 
+
+        /**
+         * @author Regina Sharaeva
+         */
         public function updateAssignee($id)
         {
             $ticket = $this->ticketRepository->getTicket($id);
@@ -463,6 +485,10 @@ namespace leantime\domain\services {
         }
 
         //Update
+
+        /**
+         * @author Regina Sharaeva
+         */
         public function updateTicket($id, $values)
         {
             $markers = $values['markers'];
@@ -494,6 +520,10 @@ namespace leantime\domain\services {
         }
 
         //Update
+        /**
+         * updated by
+         * @author Regina Sharaeva
+         */ 
         public function updateTicketData($id, $values, $marker)
         {
 
@@ -663,6 +693,9 @@ namespace leantime\domain\services {
 
         }
 
+        /**
+         * @author Regina Sharaeva
+         */ 
         public function updateAssigneeForRelated($id)
         {
 
@@ -676,6 +709,10 @@ namespace leantime\domain\services {
             return;
         }
 
+        /**
+         * updated by
+         * @author Regina Sharaeva
+         */ 
         public function updateTicketStatusAndSorting($params, $handler=null)
         {
 

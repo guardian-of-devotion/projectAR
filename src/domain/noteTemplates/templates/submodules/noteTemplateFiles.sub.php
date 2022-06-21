@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * @author Regina Sharaeva
+ */
 $noteTemplate = $this->get('noteTemplate');
 
 ?>

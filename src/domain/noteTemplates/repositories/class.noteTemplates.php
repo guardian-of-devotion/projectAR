@@ -1,6 +1,9 @@
 <?php
 
 
+/**
+ * @author Regina Sharaeva
+ */
 namespace leantime\domain\repositories;
 
 use leantime\core;

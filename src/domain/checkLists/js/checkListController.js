@@ -1,3 +1,4 @@
+// @author Regina Sharaeva
 leantime.checkListController = (function () {
 
 

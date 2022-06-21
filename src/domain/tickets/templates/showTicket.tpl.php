@@ -1,5 +1,9 @@
 <?php
 
+    /**
+     * updated by
+     * @author Regina Sharaeva
+     */ 
     defined('RESTRICTED') or die('Restricted access');
 	$ticket = $this->get('ticket');
 	$projectData = $this->get('projectData');

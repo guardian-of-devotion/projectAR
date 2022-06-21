@@ -1,7 +1,8 @@
 <?php
 /**
- * диаграмма ганта для задач типа ticket
- */
+ * Диаграмма ганта для задач типа ticket
+ * @author Regina Sharaeva
+ */ 
 defined('RESTRICTED') or die('Restricted access');
 $tickets = $this->get("tickets");
 ?>

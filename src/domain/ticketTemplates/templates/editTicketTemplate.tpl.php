@@ -1,5 +1,8 @@
 <?php
-
+    
+    /**
+     * @author Regina Sharaeva
+     */
     defined('RESTRICTED') or die('Restricted access');
     $ticketTemplate = $this->get('ticketTemplate');
     $ticketTypes = $this->get('ticketTypes');

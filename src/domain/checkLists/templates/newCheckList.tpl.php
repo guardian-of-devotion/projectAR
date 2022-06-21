@@ -1,5 +1,8 @@
 <?php
-
+    
+    /**
+     * @author Regina Sharaeva
+     */
     defined('RESTRICTED') or die('Restricted access');
     $checkList = $this->get('checkList');
 

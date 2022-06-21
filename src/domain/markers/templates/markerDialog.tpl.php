@@ -1,4 +1,8 @@
 <?php
+  
+  /**
+   * @author Regina Sharaeva
+   */
   $currentMarker = $this->get('marker');
   $markers = $this->get('markers');
 ?>

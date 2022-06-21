@@ -1,4 +1,8 @@
 <?php
+    
+    /**
+     * @author Regina Sharaeva
+     */
     $ticketTemplate = $this->get('ticketTemplate');
     $ticketTypes = $this->get('ticketTypes');
     $efforts = $this->get('efforts');

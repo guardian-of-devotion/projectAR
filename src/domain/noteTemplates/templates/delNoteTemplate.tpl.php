@@ -1,4 +1,8 @@
 <?php
+
+/**
+ * @author Regina Sharaeva
+ */
 defined('RESTRICTED') or die('Restricted access');
 $noteTemplate = $this->get("noteTemplate");
 ?>

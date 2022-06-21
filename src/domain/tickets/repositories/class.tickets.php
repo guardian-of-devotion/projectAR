@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * updated by
+ * @author Regina Sharaeva
+ */ 
 namespace leantime\domain\repositories {
 
     use leantime\core;
@@ -1284,6 +1288,9 @@ namespace leantime\domain\repositories {
             return $values;
         }
 
+        /**
+         * @author Regina Sharaeva
+         */ 
         public function updateAssignee($id, $editorId)
         {
             $query = "UPDATE zp_tickets
@@ -1344,6 +1351,10 @@ namespace leantime\domain\repositories {
 
         }
 
+        /**
+         * updated by
+         * @author Regina Sharaeva
+         */ 
         public function deleteTicketMarkers($marker)
         {
             $query = "UPDATE zp_tickets
@@ -1477,6 +1488,7 @@ namespace leantime\domain\repositories {
 
         /**
          * get Parent ( Related ) of Ticket
+         * @author Regina Sharaeva
          */
         public function getRelatedTicketById($ticketId)
         {
@@ -1506,6 +1518,9 @@ namespace leantime\domain\repositories {
             return $values;
         }
 
+        /**
+         * @author Regina Sharaeva
+         */ 
         public function updateTicketResult($id, $result)
         {
             $sql = "UPDATE zp_tickets t
@@ -1523,6 +1538,9 @@ namespace leantime\domain\repositories {
             return $result;
         }
 
+        /**
+         * @author Regina Sharaeva
+         */ 
         public function updateRelatedTicket($id, $relatedTicketId)
         {
             $sql = "UPDATE zp_tickets t

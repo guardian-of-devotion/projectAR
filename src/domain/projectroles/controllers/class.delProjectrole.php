@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * @author Regina Sharaeva
+ */
 namespace leantime\domain\controllers {
 
     use leantime\core;

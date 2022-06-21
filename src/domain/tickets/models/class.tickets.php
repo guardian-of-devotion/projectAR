@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * updated by
+ * @author Regina Sharaeva
+ */ 
 namespace leantime\domain\models {
 
     class tickets

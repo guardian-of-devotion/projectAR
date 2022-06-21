@@ -1,4 +1,9 @@
 <?php
+
+/**
+ * updated by
+ * @author Regina Sharaeva
+ */ 
 $ticket = $this->get('ticket');
 $parents = $this->get('relatedTickets');
 $AllTickets = $this->get('AllTicketsOnThisProject');

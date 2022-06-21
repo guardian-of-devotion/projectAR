@@ -1,4 +1,8 @@
 <?php
+
+/**
+ * @author Regina Sharaeva
+ */
 $ticketTemplate = $this->get('ticketTemplate');
 ?>
 <div class="mediamgr_category">
