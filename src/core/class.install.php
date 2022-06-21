@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * updated by
+ * @author Regina Sharaeva
+ */ 
 namespace leantime\core {
 
     use leantime\domain\repositories\setting;
