@@ -3,6 +3,8 @@
     $values = $this->get('values');
     $projects = $this->get('relations');
     $projectroles = $this->get('projectroles');
+    $profLevels = $this->get('profLevels');
+    $rolesWithProfLevel = $this->get('roleProfLevel');
 ?>
 <script type="text/javascript">
     
@@ -11,73 +13,78 @@
         var db = jQuery('#dualselect').find('.ds_arrow button');    //get arrows of dual select
         var sel1 = jQuery('#dualselect select#selectOrigin');        //get first select element
         var sel2 = jQuery('#dualselect select#selectDest');            //get second select element
-        var projects = jQuery('#projects');        
+        var projects = jQuery('#projects');
         //sel2.empty(); //empty it first from dom.
-        
+
         db.click(function(){
-            
+
             var t = (jQuery(this).hasClass('ds_prev'))? 0 : 1;    // 0 if arrow prev otherwise arrow next
-            
+
             if(t) {
-                
+
                 sel1.find('option').each(function(){
-                
+
                     if(jQuery(this).is(':selected')) {
-                        
+
                         jQuery(this).attr('selected',false);
 
                         sel2.append(jQuery(this).clone());
-                        
+
                         jQuery('#projects').append(jQuery(this));
-                        
+
                         jQuery('#projects option').attr("selected", "selected");
-                    
+
                     }
-                
-                });    
-                
-                
+
+                });
+
+
             } else {
                 sel2.find('option').each(function(){
-                    
+
                     if(jQuery(this).is(':selected')) {
-                        
+
                         jQuery(this).attr('selected',false);
                         index = jQuery(this).index();
 
                         sel1.append(jQuery(this));
-                        
+
                         jQuery('#projects option:eq('+index+')').remove();
-                        
+
                         jQuery('#projects option').attr("selected", "selected");
-                    
+
                     }
-                });        
+                });
             }
-            
-            
+
+
             return false;
-        });    
-        
-        
+        });
+
+
     });
-    
+
 </script>
 
 <div class="pageheader">
-            
+
             <div class="pageicon"><span class="<?php echo $this->getModulePicture() ?>"></span></div>
             <div class="pagetitle">
                 <h5><?php echo $this->__('label.administration') ?></h5>
                 <h1><?php echo $this->__('headlines.edit_user'); ?></h1>
             </div>
         </div><!--pageheader-->
-        
+
         <div class="maincontent">
             <div class="maincontentinner">
 
                 <div class="row-fluid">
                     <span class="span12"><?php echo $this->displayNotification() ?></span>
+                </div>
+
+                <div class="">
+                    <a href="<?= BASE_URL ?>/users/editProjectsPercent/<?php echo $values["userId"];?>" class="milestone btn btn-primary">
+                        <?php echo $this->__('label.setting_activity_percent')?>  </a>
                 </div>
 
                 <div class="row-fluid">
@@ -99,22 +106,29 @@
 
                                     <label for="projectrole"><?php echo $this->__('label.projectrole'); ?></label> 
                                     <select name="projectroleId[]" id="projectrole" multiple="multiple">
-                                        <option value=""><?=$this->__("dropdown.not_assigned"); ?></option>
-                                        <?php foreach($this->get('projectroles') as $projectrole){ ?>
-                                        <option value="<?php echo $projectrole->id; ?>"
-                                            <?php if ($values['projectroleId'] != null) { if (in_array($projectrole->id, json_decode($values['projectroleId']))) { ?> selected="selected" 
-                                                <?php }} ?>>
-                                            <?php echo $projectrole->name; ?>
-                                        </option>
+                                        <option value=null><?=$this->__("dropdown.not_assigned"); ?></option>
+                                        <?php foreach($this->get('projectroles') as $projectrole) { ?>
+                                            <?php foreach($this->get('profLevels') as $profLevel) { ?>
+                                                <option value="<?php echo "$projectrole->id-$profLevel->id"; ?>"
+                                                <?php if ($values['projectroleId'] != null) { if (in_array($projectrole->id . '-' .$profLevel->id, $rolesWithProfLevel)) { ?> selected="selected"
+                                                    <?php }} ?>>
+                                                <?php echo "$projectrole->name-$profLevel->name"; ?>
+                                                </option>
+                                            <?php } ?>
                                         <?php } ?>
                                     </select> <br />
 
+                                    <label for="rate"><?php echo $this->__('label.hourly_rate'); ?></label> <input
+                                           type="number" name="hourlyRate" id="hourlyRate"
+                                           value="<?php $this->e($values['hourlyRate']); ?>"/><br/>
+
                                     <label for="user"><?php echo $this->__('label.email'); ?></label> <input
-                                        type="text" name="user" id="user" value="<?php $this->e($values['user']); ?>" /><br />
+                                           type="text" name="user" id="user"
+                                           value="<?php $this->e($values['user']); ?>"/><br/>
 
                                     <label for="phone"><?php echo $this->__('label.phone'); ?></label> <input
-                                        type="text" name="phone" id="phone"
-                                        value="<?php $this->e($values['phone']); ?>" /><br />
+                                           type="text" name="phone" id="phone"
+                                           value="<?php $this->e($values['phone']); ?>"/><br/>
 
                                     <label for="status"><?php echo $this->__('label.status'); ?></label>
                                    <select name='status' id='status'>

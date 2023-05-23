@@ -48,7 +48,7 @@ $projectroles = $this->get('projectroles');
                             <p>
                                 <label><?=$this->__("label.projectrole"); ?></label>
                                 <select data-placeholder="<?php echo $this->__('label.projectrole'); ?>" name="projectroleId[]" class="user-select span11" multiple="multiple">
-                                    <option value=""><?=$this->__("dropdown.not_assigned"); ?></option>
+                                    <option value=null><?=$this->__("dropdown.not_assigned"); ?></option>
                                     <?php foreach ($this->get('projectroles') as $roleRow) { ?>
 
                                         <?php echo "<option value='" . $roleRow->id . "'";

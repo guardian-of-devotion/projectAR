@@ -3,7 +3,7 @@
 /**
  * updated by
  * @author Regina Sharaeva
- */ 
+ */
 $ticket = $this->get('ticket');
 $remainingHours = $this->get('remainingHours');
 $statusLabels = $this->get('statusLabels');
@@ -150,7 +150,7 @@ $allTickets = $this->get('allTicketsOnThisProject');
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="span4 control-label"><?=$this->__('label.related_ticket'); ?></label>
+                    <label class="span4 control-label"><?= $this->__('label.related_ticket'); ?></label>
                     <div class="span6">
                         <select name="relatedTicketId" id="relatedTicketId">
                             <option value=""><?php echo $this->__('label.related_not_defined'); ?></option>
@@ -161,7 +161,7 @@ $allTickets = $this->get('allTicketsOnThisProject');
                                         echo "selected='selected'";
                                     }
                                     echo "> " . $oneOfTickets->headline . "</option>";
-                                } 
+                                }
                             } ?>
                         </select>
                     </div>
@@ -214,6 +214,25 @@ $allTickets = $this->get('allTicketsOnThisProject');
                         </select>
                         <a href="javascript:void(0);"
                            onclick="jQuery('select[name=editorId]').val('<?php echo $_SESSION['userdata']['id']; ?>')"><?php echo $this->__('label.assign_to_me'); ?></a>
+                    </div>
+                        <label style="margin-left: 0"
+                               class="span4 control-label"><?php echo $this->__('label.min_prof_level'); ?></label>
+                    <div class="span6">
+                    <select data-placeholder="<?php echo $this->__('label.min_prof_level'); ?>"
+                                name="minProfLevelId" class="user-select span11">
+                            <option value=null><?php echo $this->__('label.not_chosen_prof_level'); ?></option>
+                            <?php foreach ($this->get('profLevels') as $level) { ?>
+
+                                <?php echo "<option value='" . $level->id . "'";
+
+                                if ($ticket->minProfLevelId == $level->id) {
+                                    echo " selected='selected' ";
+                                }
+
+                                echo ">" . $level->name . "</option>"; ?>
+
+                            <?php } ?>
+                        </select>
                     </div>
                 </div>
 

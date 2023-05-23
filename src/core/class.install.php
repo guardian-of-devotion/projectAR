@@ -29,28 +29,28 @@ namespace leantime\core {
          * @access private
          * @var object
          */
-        private $database = '';
+        private $database;
 
         /**
          * database username
          * @access private
          * @var string
          */
-        private $user = '';
+        private $user;
 
         /**
          * ddatabase password
          * @access private
          * @var string
          */
-        private $password = '';
+        private $password;
 
         /**
          * database host
          * @access private
          * @var string
          */
-        private $host = '';
+        private $host;
 
         /**
          * db update scripts listed out by version number with leading zeros A.BB.CC => ABBCC
@@ -169,7 +169,7 @@ namespace leantime\core {
                 $stmn->bindValue(':firstname', $values["firstname"], PDO::PARAM_STR);
                 $stmn->bindValue(':lastname', $values["lastname"], PDO::PARAM_STR);
                 $stmn->bindValue(':dbVersion', $settings->dbVersion, PDO::PARAM_STR);
-                $stmn->bindValue(':company', $values["company"], PDO::PARAM_STR);
+//                $stmn->bindValue(':company', $values["company"], PDO::PARAM_STR);
 
                 $stmn->execute();
 
@@ -292,8 +292,8 @@ namespace leantime\core {
          */
         private function sqlPrep()
         {
+            $sql =  <<<SQL
 
-            $sql = "			
                 CREATE TABLE `zp_account` (
                   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
                   `projectId` int(11) DEFAULT NULL,
@@ -466,6 +466,7 @@ namespace leantime\core {
                   `dollarBudget` int(11) DEFAULT NULL,
                   `active` int(11) DEFAULT NULL,
                   `psettings` MEDIUMTEXT NULL,
+                  `end_at` DATETIME NULL,
                   PRIMARY KEY (`id`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
                 
@@ -493,10 +494,11 @@ namespace leantime\core {
                   `userId` int(11) DEFAULT NULL,
                   `projectId` int(11) DEFAULT NULL,
                   `wage` int(11) DEFAULT NULL,
+                  `activity_percent` FLOAT DEFAULT NULL,
                   PRIMARY KEY (`id`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
                 
-                insert  into `zp_relationuserproject`(`id`,`userId`,`projectId`,`wage`) values (9,20,3,NULL),(8,18,3,NULL),(7,19,3,NULL),(6,1,3,NULL);
+                insert  into `zp_relationuserproject`(`id`,`userId`,`projectId`,`wage`, activity_percent) values (9,20,3,NULL,NULL),(8,18,3,NULL,NULL),(7,19,3,NULL,NULL),(6,1,3,NULL,NULL);
                 
                 CREATE TABLE `zp_roles` (
                   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -543,6 +545,7 @@ namespace leantime\core {
                   `acceptanceCriteria` text,
                   `date` datetime DEFAULT NULL,
                   `dateToFinish` datetime DEFAULT NULL,
+                  `closed_at` datetime DEFAULT NULL,
                   `priority` varchar(60) DEFAULT NULL,
                   `markerId` varchar(60) DEFAULT NULL,
                   `status` int(2) DEFAULT NULL,
@@ -558,6 +561,7 @@ namespace leantime\core {
                   `editFrom` datetime DEFAULT NULL,
                   `editTo` datetime DEFAULT NULL,
                   `editorId` varchar(75) DEFAULT NULL,
+                  `minProfLevelId` int(11) DEFAULT NULL,
                   `planHours` float DEFAULT NULL,
                   `hourRemaining` float DEFAULT NULL,
                   `type` varchar(255) DEFAULT NULL,
@@ -573,15 +577,15 @@ namespace leantime\core {
                   `retrospectiveid` INT NULL, 
                   `ideaid` INT NULL, 
                   `zp_ticketscol` VARCHAR(45) NULL, 
-                  `result TEXT`,
+                  `result` TEXT,
                   PRIMARY KEY (`id`),
                   KEY `ProjectUserId` (`projectId`,`userId`),
                   KEY `StatusSprint` (`status`,`sprint`),
                   KEY `Sorting` (`sortindex`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
                 
-                insert  into `zp_tickets`(`id`,`projectId`,`headline`,`description`,`acceptanceCriteria`,`date`,`dateToFinish`,`priority`,`marker`, `status`,`userId`,`os`,`browser`,`resolution`,`component`,`version`,`url`,`dependingTicketId`,`editFrom`,`editTo`,`editorId`,`planHours`,`hourRemaining`,`type`,`production`,`staging`,`storypoints`,`sprint`,`sortindex`,`kanbanSortIndex`) values 
-                (9,3,'Getting Started with Leantime','Look around and make yourself familiar with the system. ','','2015-11-30 00:00:00','1969-12-31 00:00:00',NULL, NULL, 3,1,NULL,NULL,NULL,NULL,'',NULL,NULL,'1969-12-31 00:00:00','1969-12-31 00:00:00',1,0,0,'Story',0,0,0,0,NULL,NULL);
+                insert  into `zp_tickets`(`id`,`projectId`,`headline`,`description`,`acceptanceCriteria`,`date`,`dateToFinish`,`closed_at`,`priority`,`markerId`, `status`,`userId`,`os`,`browser`,`resolution`,`component`,`version`,`url`,`dependingTicketId`,`editFrom`,`editTo`,`editorId`,`planHours`,`hourRemaining`,`type`,`production`,`staging`,`storypoints`,`sprint`,`sortindex`,`kanbanSortIndex`) values 
+                (9,3,'Getting Started with Leantime','Look around and make yourself familiar with the system. ','','2015-11-30 00:00:00','1969-12-31 00:00:00',NULL,NULL, NULL, 3,1,NULL,NULL,NULL,NULL,'',NULL,NULL,'1969-12-31 00:00:00','1969-12-31 00:00:00',1,0,0,'Story',0,0,0,0,NULL,NULL);
                             
                 CREATE TABLE `zp_timesheets` (
                   `id` int(255) NOT NULL AUTO_INCREMENT,
@@ -610,6 +614,7 @@ namespace leantime\core {
                   `profileId` varchar(100) NOT NULL DEFAULT '',
                   `lastlogin` datetime DEFAULT NULL,
                   `projectroleId` json DEFAULT NULL,
+                  `hourlyRate` float DEFAULT 40,
 
                   `status` varchar(1) NOT NULL DEFAULT 'A',
                   `expires` DATETIME DEFAULT NULL,
@@ -762,8 +767,6 @@ namespace leantime\core {
                   KEY `Sorting` (`sortindex`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
                 
-               --insert...
-
             CREATE TABLE `zp_marker` (
                 `id` int(11) NOT NULL AUTO_INCREMENT,
                 `name` VARCHAR(45) NULL,
@@ -829,305 +832,42 @@ namespace leantime\core {
                 PRIMARY KEY (`id`),
                 KEY `Answers` (`answerId` ASC)
             )  ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+            
+            CREATE TABLE `zp_proficiency_level` (
+                `id` INT NOT NULL AUTO_INCREMENT,
+                `name` varchar(255),
+                PRIMARY KEY (`id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-            ";
+            insert into `zp_proficiency_level` (`id`, `name`) VALUES (1, 'junior');
+            insert into `zp_proficiency_level` (`id`, `name`) VALUES (1, 'middle');
+            insert into `zp_proficiency_level` (`id`, `name`) VALUES (1, 'senior');
+            
+            CREATE TABLE `zp_user_projectrole_proficiency` (
+                `userId` INT NOT NULL,
+                `projectroleId` INT NOT NULL,
+                `proficiencyLevelId` INT NOT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+            CREATE TABLE `zp_efforts_hours` (
+                `id` int(11) NOT NULL AUTO_INCREMENT,
+                `effort_value` INT NOT NULL,
+                `effort_hours` FLOAT NOT NULL,
+                `project_id` INT NOT NULL,
+                PRIMARY KEY (`id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+            
+            INSERT INTO `zp_efforts_hours` (`effort_value`, `effort_hours`, project_id) VALUES (1, 4, 3);
+            INSERT INTO `zp_efforts_hours` (`effort_value`, `effort_hours`, project_id) VALUES (2, 8, 3);
+            INSERT INTO `zp_efforts_hours` (`effort_value`, `effort_hours`, project_id) VALUES (3, 12, 3);
+            INSERT INTO `zp_efforts_hours` (`effort_value`, `effort_hours`, project_id) VALUES (5, 20, 3);
+            INSERT INTO `zp_efforts_hours` (`effort_value`, `effort_hours`, project_id) VALUES (8, 32, 3);
+            INSERT INTO `zp_efforts_hours` (`effort_value`, `effort_hours`, project_id) VALUES (13, 52, 3);
+            INSERT INTO `zp_efforts_hours` (`effort_value`, `effort_hours`, project_id) VALUES (21, 80, 3);
+            SQL;
 
             return $sql;
 
         }
-
-
-        /**
-         * update_sql_20004 - database update sql for V2.0.4
-         * - Updates all tables and db to utf8mb4
-         * - converts 255 index to be smaller
-         *
-         * @access public
-         * @return bool | array
-         */
-        private function update_sql_20004()
-        {
-
-            $errors = array();
-
-            $sql = array(
-                "ALTER TABLE `zp_wiki_articles` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-                "ALTER TABLE `zp_submodulerights` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-
-                "ALTER TABLE `zp_canvas` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-                "ALTER TABLE `zp_wiki_categories` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-                "ALTER TABLE `zp_tickethistory` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-                "ALTER TABLE `zp_gcallinks` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-                "ALTER TABLE `zp_message` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-                "ALTER TABLE `zp_notification` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-
-                "ALTER TABLE `zp_timesheets` MODIFY kind VARCHAR(175);",
-                "ALTER TABLE `zp_timesheets` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-
-                "ALTER TABLE `zp_roles` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-                "ALTER TABLE `zp_projects` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-                "ALTER TABLE `zp_modulerights` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-                "ALTER TABLE `zp_wiki_comments` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-                "ALTER TABLE `zp_punch_clock` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-                "ALTER TABLE `zp_clients` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-                "ALTER TABLE `zp_account` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-                "ALTER TABLE `zp_sprints` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-                "ALTER TABLE `zp_lead` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-
-                "ALTER TABLE `zp_user` MODIFY username VARCHAR(175);",
-                "ALTER TABLE `zp_user` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-
-                "ALTER TABLE `zp_settings` MODIFY `key` VARCHAR(175);",
-                "ALTER TABLE `zp_settings` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-
-                "ALTER TABLE `zp_comment` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-                "ALTER TABLE `zp_stats` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-
-                "ALTER TABLE `zp_tickets` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-                "ALTER TABLE `zp_canvas_items` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-                "ALTER TABLE `zp_dashboard_widgets` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-                "ALTER TABLE `zp_file` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-                "ALTER TABLE `zp_action_tabs` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-                "ALTER TABLE `zp_relationuserproject` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-                "ALTER TABLE `zp_calendar` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-                "ALTER TABLE `zp_read` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-                "ALTER TABLE `zp_wiki` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-                "ALTER TABLE `zp_note` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-            );
-
-            foreach ($sql as $statement) {
-
-                try {
-
-                    $stmn = $this->database->prepare($statement);
-                    $stmn->execute();
-
-                } catch (\PDOException $e) {
-                    array_push($errors, $statement . " Failed:" . $e->getMessage());
-                }
-
-            }
-
-
-            if(count($errors) > 0) {
-                return $errors;
-            }else{
-                return true;
-            }
-
-        }
-
-        private function update_sql_20100()
-        {
-
-            $errors = array();
-
-            $sql = array(
-                "UPDATE `zp_user` SET role = 50 WHERE role = 2;",
-                "UPDATE `zp_user` SET role = 10 WHERE role = 3;",
-                "UPDATE `zp_user` SET role = 20 WHERE role = 4;",
-                "UPDATE `zp_user` SET role = 40 WHERE role = 5;",
-            );
-
-            foreach ($sql as $statement) {
-
-                try {
-
-                    $stmn = $this->database->prepare($statement);
-                    $stmn->execute();
-
-                } catch (\PDOException $e) {
-                    array_push($errors, $statement . " Failed:" . $e->getMessage());
-                }
-
-            }
-
-            if(count($errors) > 0) {
-                return $errors;
-            }else{
-                return true;
-            }
-
-        }
-
-        private function update_sql_20101() {
-
-
-            $errors = array();
-
-            $sql = array(
-                "ALTER TABLE `zp_comment` CHANGE COLUMN `module` `module` VARCHAR(200) NULL DEFAULT NULL ;",
-                "ALTER TABLE `zp_stats`
-                    ADD COLUMN `sum_teammembers` INT(11) NULL DEFAULT NULL AFTER `daily_avg_hours_remaining_todo`,
-                    CHANGE COLUMN `sum_planned_hours` `sum_planned_hours` FLOAT NULL DEFAULT NULL ,
-                    CHANGE COLUMN `sum_logged_hours` `sum_logged_hours` FLOAT NULL DEFAULT NULL ,
-                    CHANGE COLUMN `sum_estremaining_hours` `sum_estremaining_hours` FLOAT NULL DEFAULT NULL ,
-                    CHANGE COLUMN `daily_avg_hours_booked_todo` `daily_avg_hours_booked_todo` FLOAT NULL DEFAULT NULL ,
-                    CHANGE COLUMN `daily_avg_hours_booked_point` `daily_avg_hours_booked_point` FLOAT NULL DEFAULT NULL ,
-                    CHANGE COLUMN `daily_avg_hours_planned_todo` `daily_avg_hours_planned_todo` FLOAT NULL DEFAULT NULL ,
-                    CHANGE COLUMN `daily_avg_hours_planned_point` `daily_avg_hours_planned_point` FLOAT NULL DEFAULT NULL ,
-                    CHANGE COLUMN `daily_avg_hours_remaining_point` `daily_avg_hours_remaining_point` FLOAT NULL DEFAULT NULL ,
-                    CHANGE COLUMN `daily_avg_hours_remaining_todo` `daily_avg_hours_remaining_todo` FLOAT NULL DEFAULT NULL ;",
-                "CREATE TABLE `zp_audit` (
-                      `id` INT NOT NULL AUTO_INCREMENT,
-                      `userId` INT NULL,
-                      `projectId` INT NULL,
-                      `action` VARCHAR(45) NULL,
-                      `entity` VARCHAR(45) NULL,
-                      `entityId` INT NULL,
-                      `values` TEXT NULL,
-                      `date` DATETIME NULL,
-                      PRIMARY KEY (`id`),
-                      KEY `projectId` (`projectId` ASC),
-                      KEY `projectAction` (`projectId` ASC, `action` ASC),
-                      KEY `projectEntityEntityId` (`projectId` ASC, `entity` ASC, `entityId` ASC)
-                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
-
-
-            );
-
-            foreach ($sql as $statement) {
-
-                try {
-
-                    $stmn = $this->database->prepare($statement);
-                    $stmn->execute();
-
-                } catch (\PDOException $e) {
-                    array_push($errors, $statement . " Failed:" . $e->getMessage());
-                }
-
-            }
-
-            if(count($errors) > 0) {
-                return $errors;
-            }else{
-                return true;
-            }
-
-        }
-
-        private function update_sql_20102()
-        {
-            $errors = array();
-
-            $sql = array(
-                "ALTER TABLE `zp_user` add COLUMN `twoFAEnabled` tinyint(1) DEFAULT '0'",
-                "ALTER TABLE `zp_user` add COLUMN `twoFASecret` varchar(200) DEFAULT NULL"
-            );
-
-            foreach ($sql as $statement) {
-
-                try {
-
-                    $stmn = $this->database->prepare($statement);
-                    $stmn->execute();
-
-                } catch (\PDOException $e) {
-                    array_push($errors, $statement . " Failed:" . $e->getMessage());
-                }
-
-            }
-
-            if(count($errors) > 0) {
-                return $errors;
-            }else{
-                return true;
-            }
-
-        }
-
-        private function update_sql_20103()
-        {
-            $errors = array();
-
-            $sql = array(
-                "ALTER TABLE `zp_tickets` CHANGE COLUMN `planHours` `planHours` FLOAT NULL DEFAULT NULL",
-                "ALTER TABLE `zp_tickets` CHANGE COLUMN `hourRemaining` `hourRemaining` FLOAT NULL DEFAULT NULL"
-            );
-
-            foreach ($sql as $statement) {
-
-                try {
-
-                    $stmn = $this->database->prepare($statement);
-                    $stmn->execute();
-
-                } catch (\PDOException $e) {
-                    array_push($errors, $statement . " Failed:" . $e->getMessage());
-                }
-
-            }
-
-            if(count($errors) > 0) {
-                return $errors;
-            }else{
-                return true;
-            }
-
-        }
-
-        private function update_sql_20104()
-        {
-            $errors = array();
-
-            $sql = array(
-                "ALTER TABLE `zp_user` ADD COLUMN `pwResetCount` INT(5) NULL AFTER `pwResetExpiration`",
-                "ALTER TABLE `zp_user` ADD COLUMN `forcePwReset` TINYINT NULL AFTER `pwResetCount`",
-                "ALTER TABLE `zp_user` ADD COLUMN `createdOn` DATETIME NULL AFTER `twoFASecret`",
-                "ALTER TABLE `zp_user` CHANGE COLUMN `lastpwd_change` `lastpwd_change` DATETIME NULL DEFAULT NULL AFTER `forcePwReset`",
-                "ALTER TABLE `zp_user` CHANGE COLUMN `expires` `expires` DATETIME NULL DEFAULT NULL",
-            );
-
-            foreach ($sql as $statement) {
-
-                try {
-
-                    $stmn = $this->database->prepare($statement);
-                    $stmn->execute();
-
-                } catch (\PDOException $e) {
-                    array_push($errors, $statement . " Failed:" . $e->getMessage());
-                }
-
-            }
-
-            if(count($errors) > 0) {
-                return $errors;
-            }else{
-                return true;
-            }
-
-        }
-
-		private function update_sql_20105()
-		{
-			$errors = array();
-
-			$sql = array(
-				"ALTER TABLE `zp_projects` ADD COLUMN `psettings` MEDIUMTEXT NULL AFTER `active`",
-			);
-
-			foreach ($sql as $statement) {
-
-				try {
-
-					$stmn = $this->database->prepare($statement);
-					$stmn->execute();
-
-				} catch (\PDOException $e) {
-					array_push($errors, $statement . " Failed:" . $e->getMessage());
-				}
-
-			}
-
-			if(count($errors) > 0) {
-				return $errors;
-			}else{
-				return true;
-			}
-
-		}
-
     }
 }

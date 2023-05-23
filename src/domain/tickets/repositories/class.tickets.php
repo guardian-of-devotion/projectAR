@@ -67,7 +67,7 @@ namespace leantime\domain\repositories {
          * @access public
          * @var    array
          */
-        public $efforts = array('1' => 'XS', '2' => 'S', 3=>"M", "5"=>"L", 8 => "XL", 13 => "XXL");
+        public $efforts = array('1' => 'XXS', '2' => 'XS', 3=>'S', '5'=>'M', 8 => 'L', 13 => 'XL', 21 => 'XXL');
 
         /**
          * @access public
@@ -256,6 +256,59 @@ namespace leantime\domain\repositories {
             return $values;
         }
 
+        public function getUsersActiveTickets($userId)
+        {
+            $sql = "
+SELECT
+    ticket.id as ticketId,
+    ticket.headline,
+    ticket.type,
+    ticket.description,
+    ticket.date,
+    ticket.dateToFinish,
+    ticket.projectId,
+    ticket.priority,
+    ticket.markerId,
+    ticket.status,
+    ticket.hourRemaining,
+    ticket.storypoints,
+    (
+        SELECT
+            count(*)
+        FROM zp_tickets
+        WHERE zp_tickets.dependingTicketId = ticketId
+    ) as totalSubtask,
+    (
+        SELECT
+            count(*)
+        FROM zp_tickets
+        WHERE zp_tickets.dependingTicketId = ticketId and zp_tickets.status = 0
+    ) as subtaskDone
+FROM
+    zp_tickets AS ticket
+        LEFT JOIN zp_relationuserproject ON ticket.projectId = zp_relationuserproject.projectId
+        LEFT JOIN zp_projects as project ON ticket.projectId = project.id
+        LEFT JOIN zp_clients as client ON project.clientId = client.id
+        LEFT JOIN zp_user AS t1 ON ticket.userId = t1.id
+        LEFT JOIN zp_user AS t2 ON ticket.editorId = t2.id
+        LEFT JOIN zp_marker as marker ON ticket.markerId = marker.id
+WHERE ticket.editorId = :userId 
+  AND ticket.type <> 'Milestone'
+  AND ticket.type <> 'Subtask'
+  AND ticket.status > 0
+GROUP BY ticket.id
+ORDER BY ticket.id DESC";
+
+            $stmn = $this->db->database->prepare($sql);
+            $stmn->bindValue(':userId', $userId, PDO::PARAM_INT);
+
+            $stmn->execute();
+            $values = $stmn->fetchAll();
+            $stmn->closeCursor();
+
+            return $values;
+        }
+
         public function getAvailableUsersForTicket()
         {
 
@@ -314,6 +367,7 @@ namespace leantime\domain\repositories {
 							zp_tickets.status,
 							zp_tickets.tags,
 							zp_tickets.editorId,
+							zp_tickets.minProfLevelId,
 							zp_tickets.dependingTicketId,
 							zp_tickets.planHours,
 							zp_tickets.hourRemaining,
@@ -490,6 +544,7 @@ namespace leantime\domain\repositories {
 						zp_tickets.acceptanceCriteria,
 						zp_tickets.userId,
 						zp_tickets.editorId,
+						zp_tickets.minProfLevelId,
 						zp_tickets.planHours,
 						zp_tickets.tags,
 						zp_tickets.url,
@@ -545,6 +600,7 @@ namespace leantime\domain\repositories {
 						zp_tickets.acceptanceCriteria,
 						zp_tickets.userId,
 						zp_tickets.editorId,
+						zp_tickets.minProfLevelId,
 						zp_tickets.planHours,
 						zp_tickets.tags,
 						zp_tickets.url,
@@ -623,6 +679,7 @@ namespace leantime\domain\repositories {
 						zp_tickets.acceptanceCriteria,
 						zp_tickets.userId,
 						zp_tickets.editorId,
+						zp_tickets.minProfLevelId,
 						zp_tickets.planHours,
 						zp_tickets.tags,
 						zp_tickets.url,
@@ -684,6 +741,7 @@ namespace leantime\domain\repositories {
 						zp_tickets.acceptanceCriteria,
 						zp_tickets.userId,
 						zp_tickets.editorId,
+                        zp_tickets.minProfLevelId,
 						zp_tickets.planHours,
 						zp_tickets.tags,
 						zp_tickets.url,
@@ -743,6 +801,7 @@ namespace leantime\domain\repositories {
 						IF((depMilestone.tags IS NULL OR depMilestone.tags = ''), '#1b75bb', depMilestone.tags) AS milestoneColor,
 						zp_tickets.userId,
 						zp_tickets.editorId,
+						zp_tickets.minProfLevelId,
 						zp_tickets.planHours,
 						IF((zp_tickets.tags IS NULL OR zp_tickets.tags = ''), '#1b75bb', zp_tickets.tags) AS tags,
 						zp_tickets.url,
@@ -905,6 +964,7 @@ namespace leantime\domain\repositories {
 						zp_tickets.acceptanceCriteria,
 						zp_tickets.userId,
 						zp_tickets.editorId,
+						zp_tickets.minProfLevelId,
 						zp_tickets.planHours,
 						zp_tickets.tags,
 						zp_tickets.url,
@@ -1092,6 +1152,7 @@ namespace leantime\domain\repositories {
 						editFrom, 
 						editTo, 
 						editorId,
+                        minProfLevelId,
 						dependingTicketId,
                         relatedTicketId,
 						sortindex,
@@ -1116,6 +1177,7 @@ namespace leantime\domain\repositories {
 						:editFrom,
 						:editTo,
 						:editorId,
+						:minProfLevelId,
 						:dependingTicketId,
                         :relatedTicketId,  
 						0,
@@ -1147,6 +1209,7 @@ namespace leantime\domain\repositories {
             $stmn->bindValue(':editFrom', $values['editFrom'], PDO::PARAM_STR);
             $stmn->bindValue(':editTo', $values['editTo'], PDO::PARAM_STR);
             $stmn->bindValue(':editorId', $values['editorId'], PDO::PARAM_STR);
+            $stmn->bindValue(':minProfLevelId', $values['minProfLevelId'], PDO::PARAM_STR);
 
             if(isset($values['dependingTicketId'])) {
                 $depending = $values['dependingTicketId'];
@@ -1221,10 +1284,12 @@ namespace leantime\domain\repositories {
 				editorId = :editorId,
 				editFrom = :editFrom,
 				editTo = :editTo,
+				closed_at = :closedAt,
 				acceptanceCriteria = :acceptanceCriteria,
 				dependingTicketId = :dependingTicketId,
 			    relatedTicketId = :relatedTicketId,
-			    result = :result
+			    result = :result,
+			    minProfLevelId = :minProfLevelId
 			WHERE id = :id LIMIT 1";
 
             $stmn = $this->db->database->prepare($query);
@@ -1246,11 +1311,12 @@ namespace leantime\domain\repositories {
             $stmn->bindValue(':editorId', $values['editorId'], PDO::PARAM_STR);
             $stmn->bindValue(':editFrom', $values['editFrom'], PDO::PARAM_STR);
             $stmn->bindValue(':editTo', $values['editTo'], PDO::PARAM_STR);
+            $stmn->bindValue(':closedAt', $values['closedAt'], PDO::PARAM_STR);
             $stmn->bindValue(':id', $id, PDO::PARAM_STR);
             $stmn->bindValue(':dependingTicketId', $values['dependingTicketId'], PDO::PARAM_STR);
             $stmn->bindValue(':result', $values['result'], PDO::PARAM_STR);
             $stmn->bindValue(':relatedTicketId', $values['relatedTicketId'], PDO::PARAM_STR);
-
+            $stmn->bindValue(':minProfLevelId', $values['minProfLevelId'], PDO::PARAM_STR);
 
             $result = $stmn->execute();
 
@@ -1556,6 +1622,52 @@ namespace leantime\domain\repositories {
             $stmn->closeCursor();
 
             return $result;
+        }
+
+        public function getTicketsByProject($projectId)
+        {
+            $currentDate = new \DateTime();
+
+            $sql = "SELECT
+						ticket.id,
+						ticket.headline,
+						ticket.type, 
+						ticket.description,
+						ticket.date,
+						ticket.dateToFinish,
+						ticket.projectId,
+						ticket.priority,
+                        ticket.markerId,
+						ticket.status,
+						ticket.storypoints,
+						ticket.editorId,
+						ticket.closed_at,
+						ticket.hourRemaining,
+						t2.firstname AS editorFirstname,
+						t2.lastname AS editorLastname,
+						r_userproject.activity_percent as activityPercent
+				FROM 
+				zp_tickets AS ticket
+				LEFT JOIN zp_relationuserproject ON ticket.projectId = zp_relationuserproject.projectId
+				LEFT JOIN zp_projects as project ON ticket.projectId = project.id  
+				LEFT JOIN zp_clients as client ON project.clientId = client.id
+				LEFT JOIN zp_user AS t2 ON ticket.editorId = t2.id
+				LEFT JOIN zp_relationuserproject AS r_userproject
+				    ON r_userproject.projectId = t2.id AND r_userproject.projectId = ticket.projectId
+                LEFT JOIN zp_marker as marker ON ticket.markerId = marker.id 
+								
+				WHERE ticket.projectId = :projectId
+				GROUP BY ticket.id
+				ORDER BY ticket.id ASC";
+
+            $stmn = $this->db->database->prepare($sql);
+            $stmn->bindValue(':projectId', $projectId, PDO::PARAM_STR);
+
+            $stmn->execute();
+            $values = $stmn->fetchAll();
+            $stmn->closeCursor();
+
+            return $values;
         }
     }
 }

@@ -82,6 +82,9 @@
             <li <?php if($module == 'retrospectives' && ($action == 'showBoards' || $action == 'showBoards')) echo"class=' active '"; ?>>
                 <a href="<?=BASE_URL ?>/retrospectives/showBoards"><?=$this->__("menu.retrospectives") ?></a>
             </li>
+            <li <?php if($module == 'burndown') echo"class=' active '"; ?>>
+                <a href="<?=BASE_URL ?>/burndown/showBurndown"><?=$this->__("menu.burndown") ?></a>
+            </li>
             <li <?php if($module == 'reports') echo"class=' active '"; ?>>
                 <a href="<?=BASE_URL ?>/reports/show"><?=$this->__("menu.reports") ?></a>
             </li>

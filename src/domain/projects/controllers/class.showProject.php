@@ -25,6 +25,7 @@ namespace leantime\domain\controllers {
             $this->commentService = new services\comments();
             $this->checkListService = new services\checkLists();
             $this->fileService = new services\files();
+            $this->storyPointsService = new services\storyPoints();
 
             if(!isset($_SESSION['lastPage'])) {
                 $_SESSION['lastPage'] = CURRENT_URL;
@@ -199,7 +200,9 @@ namespace leantime\domain\controllers {
                         'state' => $_POST['projectState'],
                         'hourBudget' => $_POST['hourBudget'],
                         'assignedUsers' => $assignedUsers,
-						'dollarBudget' => $_POST['dollarBudget']
+						'dollarBudget' => $_POST['dollarBudget'],
+						'endAt' => $_POST['endAt'],
+                        'efforts' => $_POST['efforts'],
                     );
 
                     if ($values['name'] !== '') {
@@ -211,6 +214,7 @@ namespace leantime\domain\controllers {
                         } else {
 
                             $projectRepo->editProject($values, $id);
+                            $this->storyPointsService->updateStoryPointsCostInTime($values);
                             $_SESSION['currentProjectName'] = $values['name'];
 
                             $project = $projectRepo->getProject($id);
@@ -406,6 +410,7 @@ namespace leantime\domain\controllers {
 
                 $user = new repositories\users();
 
+                $storyPoints = $this->storyPointsService->getStoryPointsConversion($id);
                 if(core\login::userIsAtLeast("manager")) {
                     $tpl->assign('availableUsers', $user->getAll());
                     $tpl->assign('clients', $clients->getAll());
@@ -428,12 +433,12 @@ namespace leantime\domain\controllers {
                 $tpl->assign('allTimesheets', $timesheets->getAll($projectFilter, $kind, $dateFrom, $dateTo, $userId, $invEmplCheck, $invCompCheck));
 
                 //Assign vars
-                $ticket = new repositories\tickets();
                 $tpl->assign('imgExtensions', array('jpg', 'jpeg', 'png', 'gif', 'psd', 'bmp', 'tif', 'thm', 'yuv'));
                 $tpl->assign('projectTickets', $projectRepo->getProjectTickets($id));
                 $tpl->assign('projectPercentage', $projectPercentage);
                 $tpl->assign('openTickets', $opentickets['openTickets']);
                 $tpl->assign('project', $project);
+                $tpl->assign('effort', $storyPoints);
 
                 $files = $file->getFilesByModule('project', $id);
                 $tpl->assign('files', $files);
@@ -470,7 +475,7 @@ namespace leantime\domain\controllers {
                 $accounts = $projectRepo->getProjectAccounts($id);
                 $tpl->assign('accounts', $accounts);
 
-                if ($_POST['checkList'] != 0) {
+                if (isset($_POST['checkList']) && $_POST['checkList'] != 0) {
                     $tpl->redirect(BASE_URL."/checkLists/checkListForProject/". $_POST['checkList']);
                 }
                 $tpl->assign('checkLists', $this->checkListService->getAllCheckLists());

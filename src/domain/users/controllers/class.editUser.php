@@ -4,11 +4,11 @@ namespace leantime\domain\controllers {
 
 	use leantime\core;
 	use leantime\domain\repositories;
+    use leantime\domain\services;
 
 	class editUser
 	{
-
-		/**
+        /**
 		 * run - display template and edit data
 		 *
 		 * @access public
@@ -27,6 +27,7 @@ namespace leantime\domain\controllers {
 					$userRepo = new repositories\users();
 					$projectroleRepo = new repositories\projectroles();
 					$language = new core\language();
+                    $userService = new services\users();
 
 					$id = (int)($_GET['id']);
 					$row = $userRepo->getUser($id);
@@ -38,12 +39,13 @@ namespace leantime\domain\controllers {
 						exit();
 					}
 
-
 					//Build values array
 					$values = array(
+                        'userId'    => $row['id'],
 						'firstname' => $row['firstname'],
 						'lastname' => $row['lastname'],
 						'user' => $row['username'],
+						'hourlyRate' => $row['hourlyRate'],
 						'phone' => $row['phone'],
 						'status' => $row['status'],
 						'role' => $row['role'],
@@ -52,6 +54,7 @@ namespace leantime\domain\controllers {
 						'clientId' => $row['clientId'],
 						'projectroleId' => $row['projectroleId']
 					);
+
 
 					if (isset($_POST['save'])) {
 
@@ -63,7 +66,8 @@ namespace leantime\domain\controllers {
 								'user' => ($_POST['user']),
 								'phone' => ($_POST['phone']),
 								'status' => ($_POST['status']),
-								'role' => ($_POST['role']),
+                                'hourlyRate' => $_POST['hourlyRate'],
+                                'role' => ($_POST['role']),
 								'hours' => ($_POST['hours']),
 								'wage' => ($_POST['wage']),
 								'clientId' => ($_POST['client']),
@@ -122,7 +126,7 @@ namespace leantime\domain\controllers {
 					//Was everything okay?
 					if ($edit !== false) {
 
-						$userRepo->editUser($values, $id);
+                        $userService->editUser($values, $id);
 
 						if (isset($_POST['projects'])) {
 							if ($_POST['projects'][0] !== '0') {
@@ -149,7 +153,7 @@ namespace leantime\domain\controllers {
 
 					//Assign vars
 					$clients = new repositories\clients();
-
+                    $profLevelRepo = new repositories\profLevel();
 
 					if (core\login::userIsAtLeast("manager")) {
 						$tpl->assign('allProjects', $project->getAll());
@@ -170,6 +174,8 @@ namespace leantime\domain\controllers {
 					$tpl->assign('values', $values);
 					$tpl->assign('relations', $projectrelation);
 					$tpl->assign('projectroles', $projectroleRepo->getAllProjectroles());
+                    $tpl->assign('profLevels', $profLevelRepo->getAllProfLevels());
+                    $tpl->assign('roleProfLevel', $userService->getUserProfLevel($id));
 
 					$tpl->assign('status', $userRepo->status);
 					$tpl->assign('id', $id);

@@ -50,7 +50,7 @@ namespace leantime\domain\controllers {
 						'role' => ($_POST['role']),
 						'password' => (password_hash($_POST['password'], PASSWORD_DEFAULT)),
 						'clientId' => ($_POST['client']),
-						'projectroleId' => ($_POST['projectroleId'])
+						'projectroleId' => ($_POST['projectroleId']),
 					);
 
 					//Choice is an illusion for client managers

@@ -3,7 +3,7 @@
 /**
  * updated by
  * @author Regina Sharaeva
- */ 
+ */
 namespace leantime\domain\services {
 
     use leantime\core;
@@ -31,6 +31,9 @@ namespace leantime\domain\services {
             $this->projectService = new services\projects();
             $this->timesheetsRepo = new repositories\timesheets();
             $this->fileService = new services\files();
+            $this-> projectRolesRepo = new repositories\projectroles();
+            $this->userRepo = new repositories\users();
+            $this->storyPointsService = new services\storyPoints();
         }
 
         //GET Properties
@@ -316,8 +319,9 @@ namespace leantime\domain\services {
                 }
 
                 if (count($markers) == 1) {
+
                     $addedTickets[] = $this->addTicketData($values, $markers[0], true);
-                } else {                
+                } else {
                     foreach ($markers as $markerId) {
                         if (!array_key_exists($markerId, $relatedTickets)) {
                             $marker = $this->markerRepository->getMarker($markerId);
@@ -332,12 +336,12 @@ namespace leantime\domain\services {
             }
             return $addedTickets;
         }
-        
+
 
         /**
          * updated by
          * @author Regina Sharaeva
-         */                    
+         */
         public function addTicketData($values, $marker, $flag=false)
         {
             $values = array(
@@ -346,7 +350,8 @@ namespace leantime\domain\services {
                 'type' => $values['type'],
                 'description' => $values['description'],
                 'projectId' => $_SESSION['currentProject'],
-                'editorId' => $this->assignUser($marker, $values['editorId'], $values['relatedTicketId'], $flag),
+                'editorId' => $this->assignUser($marker, $values['editorId'], $values['relatedTicketId'], $flag, $values['minProfLevelId']),
+                'minProfLevelId' => $values['minProfLevelId'],
                 'userId' => $_SESSION['userdata']['id'],
                 'date' => date('Y-m-d  H:i:s'),
                 'dateToFinish' => $values['dateToFinish'],
@@ -411,7 +416,7 @@ namespace leantime\domain\services {
                         $relatedMarker = $this->markerRepository->getMarker($relatedId);
 
                         $relatedId = $relatedMarker->relatedMarkerId;
-                            
+
                         while ($relatedId != null && $relatedId != "") {
                             if (array_key_exists($relatedId, $relatedTickets)) {
                                 $this->ticketRepository->updateRelatedTicket($relatedTickets[$marker], $relatedTickets[$relatedId]);
@@ -423,7 +428,7 @@ namespace leantime\domain\services {
                             }
                         }
                     }
-                } 
+                }
 
                 if ($flag) {
                     $this->updateAssignee($relatedTickets[$marker]);
@@ -439,40 +444,165 @@ namespace leantime\domain\services {
          * @return array
          * @author Regina Sharaeva
          */
-        public function assignUser($markerId, $user, $relatedTicket, $flag=null)
+        public function assignUser($markerId, $user, $relatedTicket, $flag = null, $minProfLevel = null)
         {
-            $assignee = null;
-
             if ($user != null && $user != "") {
                 return $user;
             } else {
+                //проверка на блокирующую задачу, возможно убрать
                 if ($flag === true && ($relatedTicket == null || $relatedTicket == "")) {
-                    $userRepo = new repositories\users();
-                    $projectroleRepo = new repositories\projectroles();
+                    var_dump($flag);
 
                     $marker = $this->markerRepository->getMarker($markerId);
                     $projectroleId = $marker->projectroleId;
-
                     if ($projectroleId) {
-                        $users = $userRepo->getByProjectrole($projectroleId);
-                        
-                        if (count($users) == 1) {
-                            return $users[0]['id'];
+                        if ($minProfLevel) {
+                            $profUsers = $this->userRepo->getUsersByMinProfLevel($minProfLevel, $projectroleId); //TODO сделать через массив, а не запрос в бд
                         } else {
-                            $projectrole = $projectroleRepo->getProjectrole($projectroleId);
-                            $leadId = $projectrole->leadId;
-                            $leads = $userRepo->getByProjectrole($leadId);
-                            if (count($leads) == 0) {
-                                return null;
-                            } else {
-                                return $leads[0]['id'];
+                            $profUsers = $this->userRepo->getByProjectrole($projectroleId);
+                        }
+                        if (count($profUsers) == 0) {
+                            return $this->assignLead($projectroleId);
+                        }
+                        if (count($profUsers) == 1) {
+                            return $profUsers[0]['id'];
+                        }
+
+                        $remainingUsers = [];
+                        foreach ($profUsers as $user) {
+                            $userId = $user['id'];
+                            //коэфф занятости
+                            $coefOfWork = $this->calculateFreeTime($user);
+                            $remainingUsers[] = array(
+                                'userId' => $userId,
+                                'coef' => $coefOfWork,
+                                'critical' => 0,
+                                'high' => 0,
+                                'medium' => 0,
+                                'low' => 0,
+                            );
+                        }
+
+                        $min = PHP_FLOAT_MAX;
+                        foreach ($remainingUsers as $user) {
+                            if ($min > $user['coef']) {
+                                $min = $user['coef'];
                             }
                         }
+
+                        $lastUsers = [];
+                        foreach ($remainingUsers as $user) {
+                            if ($user['coef'] == $min) {
+                                $lastUsers[] = $user;
+                            }
+                        }
+                        if (count($lastUsers) == 1) {
+                            return $lastUsers[0]['userId'];
+                        }
+
+                        foreach ($lastUsers as $user) {
+                            $tickets = $this->ticketRepository->getUsersActiveTickets($user['userId']);
+                            foreach ($tickets as $ticket) {
+                                switch ($ticket['priority']) {
+                                    case 1:
+                                        $user['critical'] += 1;
+                                        break;
+                                    case 2:
+                                        $user['high'] += 1;
+                                        break;
+                                    case 3:
+                                        $user['medium'] += 1;
+                                        break;
+                                    case 4:
+                                        $user['low'] += 1;
+                                        break;
+                                }
+                            }
+                        }
+                        //critical
+                        $remainingUsers = $this->getUsersByCriteria($lastUsers, 'critical');
+                        if (count($remainingUsers) == 1) {
+                            return $remainingUsers[0]['userId'];
+                        }
+                        $remainingUsers = $this->getUsersByCriteria($lastUsers, 'high');
+                        if (count($remainingUsers) == 1) {
+                            return $remainingUsers[0]['userId'];
+                        }
+                        $remainingUsers = $this->getUsersByCriteria($lastUsers, 'medium');
+                        if (count($remainingUsers) == 1) {
+                            return $remainingUsers[0]['userId'];
+                        }
+                        $remainingUsers = $this->getUsersByCriteria($lastUsers, 'low');
+                        //равное количество времени, даем первому, кто раньше зарегался
+                        return $remainingUsers[0]['userId'];
                     }
+
+                    return $this->assignLead($projectroleId);
                 }
-            }                
+            }
         }
 
+
+        // Назначение Лида
+        public function assignLead($projectroleId) {
+            $projectrole = $this->projectRolesRepo->getProjectrole($projectroleId);
+            $leadId = $projectrole->leadId;
+            $leads = $this->userRepo->getByProjectrole($leadId);
+            if (count($leads) == 0) {
+                printf('LEAD not assign');
+                return null;
+            } else {
+                return $leads[0]['id'];
+            }
+        }
+
+        /**
+         * считаем коэффициент
+         */
+        public function calculateFreeTime($user)
+        {
+            $userId = $user['id'];
+            $userAssignedTickets = $this->ticketRepository->getUsersActiveTickets($userId);
+            $totalRemainingHourSum = 0;
+            foreach ($userAssignedTickets as $ticket) {
+                $totalRemainingHourSum += $this->getTicketWorkTime($ticket);
+            }
+            $peopleWorkTime = $user['hourlyRate'];
+            //коэффициент работы
+            return $totalRemainingHourSum / ($peopleWorkTime * $this->projectRepository->getUserActivityPercentByProjectId($userId, $_SESSION['currentProject'])['activityPercent']);
+        }
+
+        public function getTicketWorkTime($ticket)
+        {
+            $hourRemaining =  $ticket['hourRemaining'];
+
+            if ($hourRemaining) {
+                 return $hourRemaining * 60;
+            } else {
+                $storyPointConversion = $this->storyPointsService->getStoryPointsConversion($ticket['projectId'], $ticket['storypoints']);
+                $subtaskTime = 0;
+
+                if ($ticket['totalSubtask'] > 0  &&  $ticket['subtaskDone'] > 0) {
+                    $subtaskTime =  $ticket['subtaskDone'] / $ticket['totalSubtask'];
+                }
+
+                return $storyPointConversion['0']['effort_value'] * 60 * ( 100 - ($subtaskTime)) / 100;
+
+            }
+        }
+
+        public function getUsersByCriteria($lastUsers, $criteriaName): array
+        {
+            $remainingUsers = [];
+            $minHigh = min(array_column($lastUsers, $criteriaName));
+            foreach ($lastUsers as $user) {
+                if ($user[$criteriaName] == $minHigh) {
+                    $remainingUsers[] = $user;
+                }
+            }
+
+            return $remainingUsers;
+        }
 
         /**
          * @author Regina Sharaeva
@@ -481,7 +611,6 @@ namespace leantime\domain\services {
         {
             $ticket = $this->ticketRepository->getTicket($id);
             $this->ticketRepository->updateAssignee($id, $this->assignUser($ticket->markerId, $ticket->editorId, null, true));
-            return;
         }
 
         //Update
@@ -491,6 +620,17 @@ namespace leantime\domain\services {
          */
         public function updateTicket($id, $values)
         {
+            //closed_at
+            if ($values['status'] <= 0) {
+                $now = new \DateTime();
+                $now = $now->format('Y-m-d H:i:s');
+                $values['closed_at'] = $now;
+            } else {
+                $values['closed_at'] = null;
+            }
+
+
+
             $markers = $values['markers'];
 
             if (count($markers) == 0) {
@@ -512,7 +652,7 @@ namespace leantime\domain\services {
                         $relatedTickets[$markers[0]] = $this->updateTicketData($id, $values, $markers[0]);
                         $marker = $this->markerRepository->getMarker($markers[0]);
                         $relatedMarkers[$markers[0]] = $marker->relatedMarkerId;
-                    }            
+                    }
 
                     return $this->addTicket($values, $markers, $relatedMarkers, $relatedTickets);
                 }
@@ -523,7 +663,7 @@ namespace leantime\domain\services {
         /**
          * updated by
          * @author Regina Sharaeva
-         */ 
+         */
         public function updateTicketData($id, $values, $marker)
         {
 
@@ -533,7 +673,7 @@ namespace leantime\domain\services {
                 'type' => $values['type'],
                 'description' => $values['description'],
                 'projectId' => $_SESSION['currentProject'],
-                'editorId' => $this->assignUser($marker, $values['editorId'], $values['relatedTicketId']),
+                'editorId' => $this->assignUser($marker, $values['editorId'], $values['relatedTicketId'], true, $values['minProfLevelId']),
                 'date' => date('Y-m-d  H:i:s'),
                 'dateToFinish' => $values['dateToFinish'],
                 'status' => $values['status'],
@@ -547,9 +687,11 @@ namespace leantime\domain\services {
                 'acceptanceCriteria' => $values['acceptanceCriteria'],
                 'editFrom' => $values['editFrom'],
                 'editTo' => $values['editTo'],
+                'closedAt' => array_key_exists('closed_at', $values) ? $values['closed_at'] : null,
                 'dependingTicketId' => $values['dependingTicketId'],
-                'result' => $values['result'] ? $values['result'] : NULL,
+                'result' => array_key_exists('result', $values) ? $values['result'] : NULL,
                 'relatedTicketId' => $values['relatedTicketId'] ? $values['relatedTicketId'] : NULL,
+                'minProfLevelId' =>  array_key_exists('minProfLevelId',$values)  ? $values['minProfLevelId']: null,
             );
 
             if(!$this->projectService->isUserAssignedToProject($_SESSION['userdata']['id'], $values['projectId'])) {
@@ -695,7 +837,7 @@ namespace leantime\domain\services {
 
         /**
          * @author Regina Sharaeva
-         */ 
+         */
         public function updateAssigneeForRelated($id)
         {
 
@@ -712,7 +854,7 @@ namespace leantime\domain\services {
         /**
          * updated by
          * @author Regina Sharaeva
-         */ 
+         */
         public function updateTicketStatusAndSorting($params, $handler=null)
         {
 

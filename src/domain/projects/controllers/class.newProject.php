@@ -32,6 +32,7 @@ namespace leantime\domain\controllers {
             $ticketService = new services\tickets();
             $projectService = new services\projects();
             $checkListService = new services\checkLists();
+            $projectService = new services\projects();
             $language = new core\language();
 
             if(!core\login::userIsAtLeast("clientManager")) {
@@ -48,7 +49,8 @@ namespace leantime\domain\controllers {
                 'hourBudget' => '',
                 'assignedUsers' => array($_SESSION['userdata']['id']),
                 'dollarBudget' => '',
-                'state' => ''
+                'state' => '',
+                'endAt' => ''
             );
 
             if (isset($_POST['save']) === true) {
@@ -76,6 +78,7 @@ namespace leantime\domain\controllers {
                     'hourBudget' => $hourBudget,
                     'assignedUsers' => $assignedUsers,
                     'dollarBudget' => $_POST['dollarBudget'],
+                    'endAt' => $_POST['endAt'],
                     'state' => $_POST['projectState'],
                 );
 
@@ -90,7 +93,7 @@ namespace leantime\domain\controllers {
                 } else {
 
                     $projectName = $values['name'];
-                    $id = $projectRepo->addProject($values);
+                    $id = $projectService->create($values);
                     $projectService->changeCurrentSessionProject($id);
 
                     $users = $projectRepo->getUsersAssignedToProject($id);
@@ -116,7 +119,7 @@ namespace leantime\domain\controllers {
 
                     $tpl->setNotification(sprintf($language->__('notifications.project_created_successfully'), BASE_URL.'/leancanvas/simpleCanvas/'), 'success');
 
-                    if ($_POST['checkList'] != 0) {
+                    if (isset($_POST['checkList']) && $_POST['checkList'] != 0) {
                         $tpl->redirect(BASE_URL."/checkLists/checkListForProject/". $_POST['checkList']);
                     }
 

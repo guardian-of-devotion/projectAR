@@ -37,6 +37,7 @@ namespace leantime\domain\controllers {
             $this->commentService = new services\comments();
             $this->timesheetService = new services\timesheets();
             $this->userService = new services\users();
+            $this->profLevelService = new services\profLevel();
 
             if(!isset($_SESSION['lastPage'])) {
                 $_SESSION['lastPage'] = BASE_URL."/tickets/showKanban/";
@@ -73,6 +74,7 @@ namespace leantime\domain\controllers {
 
             $this->tpl->assign('userInfo', $this->userService->getUser($_SESSION['userdata']['id']));
             $this->tpl->assign('users', $this->projectService->getUsersAssignedToProject($_SESSION["currentProject"]));
+            $this->tpl->assign('profLevels', $this->profLevelService->getProfLevels());
             $this->tpl->assign("allTicketsOnThisProject", $this->ticketService->getAllTicketsForRoadmap());
 
             $this->tpl->display('tickets.newTicket');

@@ -16,42 +16,42 @@ class db
      * @access private
      * @var    string database host default: localhost
      */
-    private $host='';
+    private $host;
 
     /**
      * @access private
      * @var    string username for db
      */
-    private $user='';
+    private $user;
 
     /**
      * @access private
      * @var    string password for db
      */
-    private $password='';
+    private $password;
 
 
-    private $databaseName='';
+    private $databaseName;
 
 
-    public $database='';
+    public $database;
     /**
      * @access private
      * @var    pdo object
      */
-    private static $instance='';
+    private static $instance;
 
     /**
      * @access private
      * @var    string sql query-String
      */
-    private $sql='';
+    private $sql;
 
     /**
      * @access private
      * @var    connection database connection
      */
-    private $connection='';
+    private $connection;
 
     /**
      * @access public

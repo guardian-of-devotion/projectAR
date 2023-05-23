@@ -4,10 +4,9 @@ namespace leantime\domain\services {
 
     use leantime\core;
     use leantime\domain\repositories;
+    use leantime\domain\services;
     use \DateTime;
     use \DateInterval;
-    use PHPMailer\PHPMailer\PHPMailer;
-    use function Sodium\add;
     use League\HTMLToMarkdown\HtmlConverter;
 
     class projects
@@ -28,6 +27,7 @@ namespace leantime\domain\services {
             $this->settingsRepo = new repositories\setting();
             $this->filesRepository = new repositories\files();
             $this->language = new core\language();
+            $this->storyPointsService = new services\storyPoints();
         }
 
         public function getProject($id) {
@@ -862,6 +862,14 @@ namespace leantime\domain\services {
 
             return $newProjectId;
 
+        }
+
+        public function create($values)
+        {
+            $newProjectId = $this->projectRepository->addProject($values);
+            $this->storyPointsService->insertDefaultStoryPointsCostInTime($newProjectId);
+
+            return $newProjectId;
         }
 
     }

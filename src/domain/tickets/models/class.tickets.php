@@ -17,6 +17,7 @@ namespace leantime\domain\models {
         public $userId;
         public $priority;
         public $markerId;
+        public $minProfLevelId;
 
         public $date;
         public $dateToFinish;

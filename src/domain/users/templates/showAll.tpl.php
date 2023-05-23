@@ -45,8 +45,9 @@ $projectroles = $this->get('projectroles');
                     <th class='head1'><?php echo $this->__('label.email'); ?></th>
                     <th class='head0'><?php echo $this->__('label.client'); ?></th>
                     <th class='head1'><?php echo $this->__('label.role'); ?></th>
-                    <th class='head0'><?php echo $this->__('headlines.twoFA'); ?></th>
-                    <th class='head1 no-sort'></th>
+                    <th class='head0'><?php echo $this->__('label.projects'); ?></th>
+                    <th class='head1'><?php echo $this->__('headlines.twoFA'); ?></th>
+                    <th class='head0 no-sort'></th>
                 </tr>
             </thead>
             <tbody>
@@ -55,10 +56,18 @@ $projectroles = $this->get('projectroles');
                         <td style="padding:6px 10px;">
                         <?php echo $this->displayLink('users.editUser', sprintf( $this->__("text.full_name"), $this->escape($row["firstname"]), $this->escape($row["lastname"])), array('id' => $row['id'])); ?>
                         </td>
-                        <td><?php if ($row['projectroleId'] != null) { foreach ($projectroles as $projectrole) { if (in_array($projectrole->id, json_decode($row['projectroleId']))) { echo $projectrole->name . "</br>"; }}} ?></td>
+                        <td><?php
+                            if ($row['projectroleId'] != null) {
+                                foreach ($projectroles as $projectrole) {
+                                    if (in_array($projectrole->id, json_decode($row['projectroleId']))) {
+                                        echo $projectrole->name . "</br>";
+                                    }
+                                }
+                        } ?></td>
                         <td><?php echo $row['username']; ?></td>
                         <td><?=$row['clientName']; ?></td>
                         <td><?=$this->__("label.roles.".$roles[$row['role']]); ?></td>
+                        <td><?=$row['clientName']; ?></td>
                         <td><?php if($row['twoFAEnabled']){ echo $this->__('label.yes'); }else{ echo $this->__('label.no'); } ?></td>
                         <td><a href="<?=BASE_URL ?>/users/delUser/<?php echo $row['id']?>" class="delete"><i class="fa fa-trash"></i> <?=$this->__('links.delete');?></a></td>
                     </tr>

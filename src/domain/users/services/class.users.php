@@ -10,11 +10,13 @@ namespace leantime\domain\services {
 
         private $userRepo;
         private $tpl;
+        private $profLevelRepo;
 
         public function __construct()
         {
             $this->tpl = new core\template();
             $this->userRepo = new repositories\users();
+            $this->profLevelRepo = new repositories\profLevel();
         }
 
         //GET
@@ -58,6 +60,31 @@ namespace leantime\domain\services {
             return $this->userRepo->patchUser($_SESSION['userdata']['id'], array("settings" => $serializeSettings));
         }
 
-    }
+        public function editUser($values, $id)
+        {
+            $this->profLevelRepo->deleteAllUserProfLevel($id);
+            if ($values['projectroleId']) {
+                foreach ($values['projectroleId'] as $key => $proficiencyInfo) {
+                    $proficiencyInfo = explode('-', $proficiencyInfo);
+                    $projectRoleId = $proficiencyInfo[0];
+                    $profLevelId = $proficiencyInfo['1'];
+                    $this->profLevelRepo->insertUserProfLevel($id, $projectRoleId, $profLevelId);
+                    $values['projectroleId'][$key] = $projectRoleId;
+                }
+            }
+            $this->userRepo->editUser($values, $id);
+        }
 
+        public function getUserProfLevel($userId)
+        {
+            $values = $this->profLevelRepo->getUserProfLevel($userId);
+            $result = [];
+            foreach ($values as $profLevel) {
+                $result[] = $profLevel['projectroleId']. '-' . $profLevel['proficiencyLevelId'];
+            }
+
+            return $result;
+        }
+
+    }
 }

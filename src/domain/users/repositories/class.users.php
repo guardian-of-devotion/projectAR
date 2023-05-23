@@ -289,6 +289,7 @@ namespace leantime\domain\repositories {
 				username = :username,
 				phone = :phone,
 				status = :status,
+				hourlyRate = :hourlyRate,
 				role = :role,
 				hours = :hours,
 				wage = :wage,
@@ -304,6 +305,7 @@ namespace leantime\domain\repositories {
             $stmn->bindValue(':username', $values['user'], PDO::PARAM_STR);
             $stmn->bindValue(':phone', $values['phone'], PDO::PARAM_STR);
             $stmn->bindValue(':status', $values['status'], PDO::PARAM_STR);
+            $stmn->bindValue(':hourlyRate', $values['hourlyRate'], PDO::PARAM_STR);
             $stmn->bindValue(':role', $values['role'], PDO::PARAM_STR);
             $stmn->bindValue(':hours', $values['hours'], PDO::PARAM_STR);
             $stmn->bindValue(':wage', $values['wage'], PDO::PARAM_STR);
@@ -580,6 +582,34 @@ namespace leantime\domain\repositories {
             return $return;
         }
 
+        public function getUsersByMinProfLevel($minProfLevel, $projectroleId) {
+            $sql = <<<SQL
+SELECT zp_user.id, zp_user.username,
+       zp_user.password,
+       zp_user.firstname,
+       zp_user.lastname,
+       zp_user.phone,
+       zp_user.profileId,
+       zp_user.lastlogin,
+       zp_user.projectroleId,
+       zp_user.hourlyRate,
+       zp_user.status,
+       minProfLevel.projectroleId, minProfLevel.proficiencyLevelId,  zr.projectId, zr.activity_percent
+FROM zp_user
+INNER JOIN zp_user_projectrole_proficiency as minProfLevel ON minProfLevel.userId = zp_user.id AND minProfLevel.projectroleId = :projectroleId
+LEFT JOIN zp_relationuserproject zr ON zr.userId = zp_user.id AND zr.projectId = :projectId 
+WHERE minProfLevel.proficiencyLevelId >= :minProfLevel  
+SQL;
+
+            $stmn = $this->db->database->prepare($sql);
+            $stmn->bindValue(':minProfLevel', $minProfLevel, PDO::PARAM_INT);
+            $stmn->bindValue(':projectId', $_SESSION['currentProject'], PDO::PARAM_INT);
+            $stmn->bindValue(':projectroleId', $projectroleId, PDO::PARAM_INT);
+            $stmn->execute();
+            $users = $stmn->fetchAll();
+            $stmn->closeCursor();
+            return $users;
+        }
     }
 
 }
