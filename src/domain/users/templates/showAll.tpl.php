@@ -36,7 +36,6 @@ $projectroles = $this->get('projectroles');
                 <col class="con0">
                 <col class="con1">
                 <col class="con0">
-                <col class="con1">
             </colgroup>
             <thead>
                 <tr>
@@ -45,7 +44,6 @@ $projectroles = $this->get('projectroles');
                     <th class='head1'><?php echo $this->__('label.email'); ?></th>
                     <th class='head0'><?php echo $this->__('label.client'); ?></th>
                     <th class='head1'><?php echo $this->__('label.role'); ?></th>
-                    <th class='head0'><?php echo $this->__('label.projects'); ?></th>
                     <th class='head1'><?php echo $this->__('headlines.twoFA'); ?></th>
                     <th class='head0 no-sort'></th>
                 </tr>
@@ -67,7 +65,6 @@ $projectroles = $this->get('projectroles');
                         <td><?php echo $row['username']; ?></td>
                         <td><?=$row['clientName']; ?></td>
                         <td><?=$this->__("label.roles.".$roles[$row['role']]); ?></td>
-                        <td><?=$row['clientName']; ?></td>
                         <td><?php if($row['twoFAEnabled']){ echo $this->__('label.yes'); }else{ echo $this->__('label.no'); } ?></td>
                         <td><a href="<?=BASE_URL ?>/users/delUser/<?php echo $row['id']?>" class="delete"><i class="fa fa-trash"></i> <?=$this->__('links.delete');?></a></td>
                     </tr>

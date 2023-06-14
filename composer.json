@@ -14,7 +14,7 @@
         "robthree/twofactorauth": "^1.7",
         "endroid/qr-code": "^4.4",
         "league/html-to-markdown": "^5.1",
-      "ext-json": "*"
+        "ext-json": "*"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",

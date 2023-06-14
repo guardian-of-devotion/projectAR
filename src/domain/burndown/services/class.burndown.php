@@ -29,7 +29,6 @@ namespace leantime\domain\services {
             $projectEndDateNextDay = New \DateTime($projectEndDate);
             $projectEndDateNextDay = $projectEndDateNextDay->modify('+1 day')->format('Y-m-d');
             $storyPointConversion = $this->storyPointsService->getStoryPointsConversion($projectId);
-//            $users = $this->projectService->getUsersAssignedToProject($projectId);
             $tickets = $this->ticketRepo->getTicketsByProject($projectId);
             $ticketsAddOrClose = [];
             $actualArray = array();
@@ -76,7 +75,7 @@ namespace leantime\domain\services {
                 if (key_exists($firstTicketDayStr, $ticketsAddOrClose)) {
                     $ticketTimeChar = $ticketTimeChar + $ticketsAddOrClose[$firstTicketDayStr];
                 }
-                if ($firstTicketDayStr < $datenowStr) {
+                if ($firstTicketDayStr <= $datenowStr) {
                     $actualArray[] = $ticketTimeChar;
                 }
 

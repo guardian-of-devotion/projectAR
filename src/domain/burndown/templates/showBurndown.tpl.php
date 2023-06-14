@@ -47,7 +47,7 @@ $dateArray = $this->get('dateArray')
                 },
                 yAxis: {
                     title: {
-                        text: 'Remaining work (Hours)'
+                        text: 'Remaining work (Minutes)'
 
                     },
                     type: 'linear',
@@ -58,7 +58,7 @@ $dateArray = $this->get('dateArray')
                 },
 
                 tooltip: {
-                    valueSuffix: ' Hours',
+                    valueSuffix: ' Minutes',
                     crosshairs: true,
                     shared: true
                 },

@@ -110,7 +110,6 @@ namespace leantime\domain\repositories {
          *
          * @access public
          * @param  $id
-         * @return \leantime\domain\models\tickets|bool
          */
         public function getMarker($id)
         {

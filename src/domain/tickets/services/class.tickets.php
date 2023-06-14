@@ -451,7 +451,7 @@ namespace leantime\domain\services {
             } else {
                 //проверка на блокирующую задачу, возможно убрать
                 if ($flag === true && ($relatedTicket == null || $relatedTicket == "")) {
-                    var_dump($flag);
+//                    var_dump($flag);
 
                     $marker = $this->markerRepository->getMarker($markerId);
                     $projectroleId = $marker->projectroleId;
@@ -536,7 +536,7 @@ namespace leantime\domain\services {
                         //равное количество времени, даем первому, кто раньше зарегался
                         return $remainingUsers[0]['userId'];
                     }
-
+                    // если придет null, то никого не назначит
                     return $this->assignLead($projectroleId);
                 }
             }
@@ -549,7 +549,6 @@ namespace leantime\domain\services {
             $leadId = $projectrole->leadId;
             $leads = $this->userRepo->getByProjectrole($leadId);
             if (count($leads) == 0) {
-                printf('LEAD not assign');
                 return null;
             } else {
                 return $leads[0]['id'];
@@ -568,7 +567,7 @@ namespace leantime\domain\services {
                 $totalRemainingHourSum += $this->getTicketWorkTime($ticket);
             }
             $peopleWorkTime = $user['hourlyRate'];
-            //коэффициент работы
+            //коэффициент свободного времени
             return $totalRemainingHourSum / ($peopleWorkTime * $this->projectRepository->getUserActivityPercentByProjectId($userId, $_SESSION['currentProject'])['activityPercent']);
         }
 

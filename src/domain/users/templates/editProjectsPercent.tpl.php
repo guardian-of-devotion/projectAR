@@ -26,9 +26,9 @@ $userProjects = $this->get('userProjects');
                 </colgroup>
                 <thead>
                 <tr>
-                    <th class='head1'><?php echo $this->__('label.name'); ?></th>
+                    <th class='head1'><?php echo $this->__('label.project_name'); ?></th>
                     <th class='head0'><?php echo $this->__('label.ticketsAtUser'); ?></th>
-                    <th class='head1'><?php echo $this->__('label.activity'); ?></th>
+                    <th class='head1'><?php echo $this->__('label.activityPercent'); ?></th>
                 </tr>
                 </thead>
                 <tbody>

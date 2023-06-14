@@ -120,7 +120,7 @@
 
                                     <label for="rate"><?php echo $this->__('label.hourly_rate'); ?></label> <input
                                            type="number" name="hourlyRate" id="hourlyRate"
-                                           value="<?php $this->e($values['hourlyRate']); ?>"/><br/>
+                                           value="<?php $this->e($values['hourlyRate']); ?>"/><br/><br/>
 
                                     <label for="user"><?php echo $this->__('label.email'); ?></label> <input
                                            type="text" name="user" id="user"
