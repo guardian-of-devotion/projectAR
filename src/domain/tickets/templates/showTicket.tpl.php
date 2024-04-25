@@ -34,6 +34,7 @@
             <ul>
                 <li><a href="#ticketdetails"><?php echo $this->__("tabs.ticketDetails") ?></a></li>
                 <li><a href="#subtasks"><?php echo $this->__('tabs.subtasks') ?> (<?php echo $this->get('numSubTasks'); ?>)</a></li>
+                <li><a href="#testCases"><?php echo $this->__('tabs.testCases') ?> (<?php echo $this->get('numTestCases'); ?>) </a></li>
                 <li><a href="#files"><?php echo $this->__("tabs.files") ?> (<?php echo $this->get('numFiles'); ?>)</a></li>
                 <li><a href="#comments"><?php echo $this->__("tabs.discussion") ?> (<?php echo $this->get('numComments'); ?>)</a></li>
                 <li><a href="#result"><?php echo $this->__("tabs.tickets_results") ?> </a></li>
@@ -55,6 +56,12 @@
                 </form>
             </div>
 
+            <div id="testCases">
+                <form method="post" action="#testCases" class="ticketModal">
+                    <?php $this->displaySubmodule('tickets-ticketTestCases') ?>
+                </form>
+
+            </div>
             <div id="files">
                 <form action='#files' method='POST' enctype="multipart/form-data" class="ticketModal">
                     <?php $this->displaySubmodule('tickets-attachments') ?>

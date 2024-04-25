@@ -578,14 +578,15 @@ namespace leantime\core {
                   `ideaid` INT NULL, 
                   `zp_ticketscol` VARCHAR(45) NULL, 
                   `result` TEXT,
+                  `is_in_matrix` BOOL DEFAULT FALSE,
                   PRIMARY KEY (`id`),
                   KEY `ProjectUserId` (`projectId`,`userId`),
                   KEY `StatusSprint` (`status`,`sprint`),
                   KEY `Sorting` (`sortindex`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
                 
-                insert  into `zp_tickets`(`id`,`projectId`,`headline`,`description`,`acceptanceCriteria`,`date`,`dateToFinish`,`closed_at`,`priority`,`markerId`, `status`,`userId`,`os`,`browser`,`resolution`,`component`,`version`,`url`,`dependingTicketId`,`editFrom`,`editTo`,`editorId`,`planHours`,`hourRemaining`,`type`,`production`,`staging`,`storypoints`,`sprint`,`sortindex`,`kanbanSortIndex`) values 
-                (9,3,'Getting Started with Leantime','Look around and make yourself familiar with the system. ','','2015-11-30 00:00:00','1969-12-31 00:00:00',NULL,NULL, NULL, 3,1,NULL,NULL,NULL,NULL,'',NULL,NULL,'1969-12-31 00:00:00','1969-12-31 00:00:00',1,0,0,'Story',0,0,0,0,NULL,NULL);
+                insert  into `zp_tickets`(`id`,`projectId`,`headline`,`description`,`acceptanceCriteria`,`date`,`dateToFinish`,`closed_at`,`priority`,`markerId`, `status`,`userId`,`os`,`browser`,`resolution`,`component`,`version`,`url`,`dependingTicketId`,`editFrom`,`editTo`,`editorId`,`planHours`,`hourRemaining`,`type`,`production`,`staging`,`storypoints`,`sprint`,`sortindex`,`kanbanSortIndex`, `is_in_matrix`) values 
+                (9,3,'Getting Started with Leantime','Look around and make yourself familiar with the system. ','','2015-11-30 00:00:00','1969-12-31 00:00:00',NULL,NULL, NULL, 3,1,NULL,NULL,NULL,NULL,'',NULL,NULL,'1969-12-31 00:00:00','1969-12-31 00:00:00',1,0,0,'Story',0,0,0,0,NULL,NULL,TRUE);
                             
                 CREATE TABLE `zp_timesheets` (
                   `id` int(255) NOT NULL AUTO_INCREMENT,
@@ -689,7 +690,7 @@ namespace leantime\core {
                     `endDate` DATETIME NULL, 
                     PRIMARY KEY (`id`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-    
+
                 CREATE TABLE `zp_stats` (
                     `sprintId` INT NULL,
                     `projectId` INT NULL,
@@ -864,6 +865,18 @@ namespace leantime\core {
             INSERT INTO `zp_efforts_hours` (`effort_value`, `effort_hours`, project_id) VALUES (8, 32, 3);
             INSERT INTO `zp_efforts_hours` (`effort_value`, `effort_hours`, project_id) VALUES (13, 52, 3);
             INSERT INTO `zp_efforts_hours` (`effort_value`, `effort_hours`, project_id) VALUES (21, 80, 3);
+            
+            create table `zp_testcase_information` (
+                `testcase_id` int(11) NOT NULL,
+                `precondition` text,
+                `postcondition` text,
+                `steps` text
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+            
+            create table `zp_ticket_testcase_relation` (
+                `ticket_id` int(11) NOT NULL,
+                `testcase_id` int(11) NOT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
             SQL;
 
             return $sql;

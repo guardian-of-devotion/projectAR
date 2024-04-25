@@ -40,6 +40,9 @@ namespace leantime\domain\models {
         public $userLastname;
         public $editorFirstname;
         public $editorLastname;
+        public $precondition;
+        public $postcondition;
+        public $steps;
 
         public $doneTickets;
 
@@ -79,7 +82,9 @@ namespace leantime\domain\models {
                 $this->userLastname = $values["userLastname"] ?? '';
                 $this->editorFirstname = $values["editorFirstname"] ?? '';
                 $this->editorLastname = $values["editorLastname"] ?? '';
-
+                $this->precondition = $values["precondition"] ?? '';
+                $this->postcondition = $values["postcondition"] ?? '';
+                $this->steps = $values["steps"] ?? '';
             }
 
         }

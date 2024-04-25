@@ -3,7 +3,8 @@
 /**
  * updated by
  * @author Regina Sharaeva
- */ 
+ */
+
 namespace leantime\domain\controllers {
 
     use leantime\core;
@@ -37,8 +38,8 @@ namespace leantime\domain\controllers {
             $this->userService = new services\users();
             $this->profLevelService = new services\profLevel();
 
-            if(isset($_SESSION['lastPage']) === false){
-                $_SESSION['lastPage'] = BASE_URL."/tickets/showKanban";
+            if (isset($_SESSION['lastPage']) === false) {
+                $_SESSION['lastPage'] = BASE_URL . "/tickets/showKanban";
             }
         }
 
@@ -49,15 +50,15 @@ namespace leantime\domain\controllers {
                 $id = (int)($params['id']);
                 $ticket = $this->ticketService->getTicket($id);
 
-                if($ticket === false) {
+                if ($ticket === false) {
                     $this->tpl->display('general.error');
                     return;
                 }
 
                 //Ensure this ticket belongs to the current project
-                if($_SESSION["currentProject"] != $ticket->projectId) {
+                if ($_SESSION["currentProject"] != $ticket->projectId) {
                     $this->projectService->changeCurrentSessionProject($ticket->projectId);
-                    $this->tpl->redirect(BASE_URL."/tickets/showTicket/".$id);
+                    $this->tpl->redirect(BASE_URL . "/tickets/showTicket/" . $id);
                 }
                 //Delete file
                 if (isset($params['delFile']) === true) {
@@ -65,10 +66,10 @@ namespace leantime\domain\controllers {
                     if ($ticket->status > 0) {
                         $result = $this->fileService->deleteFile($params['delFile']);
 
-                        if($result === true) {
+                        if ($result === true) {
                             $this->tpl->setNotification($this->language->__("notifications.file_deleted"), "success");
-                            $this->tpl->redirect(BASE_URL."/tickets/showTicket/".$id."#files");
-                        }else {
+                            $this->tpl->redirect(BASE_URL . "/tickets/showTicket/" . $id . "#files");
+                        } else {
                             $this->tpl->setNotification($result["msg"], "error");
                         }
                     } else {
@@ -84,15 +85,18 @@ namespace leantime\domain\controllers {
 
                     $commentId = (int)($params['delComment']);
 
-                    if($this->commentService->deleteComment($commentId)){
+                    if ($this->commentService->deleteComment($commentId)) {
                         $this->tpl->setNotification($this->language->__("notifications.comment_deleted"), "success");
-                        $this->tpl->redirect(BASE_URL."/tickets/showTicket/".$id);
-                    }else{
+                        $this->tpl->redirect(BASE_URL . "/tickets/showTicket/" . $id);
+                    } else {
                         $this->tpl->setNotification($this->language->__("notifications.comment_deleted_error"), "error");
                     }
                 }
 
                 $this->tpl->assign('ticket', $ticket);
+                $testCases = $this->ticketService->getTestCasesByTicket($ticket->id, $ticket->projectId);
+                $this->tpl->assign('allTestCases', $testCases);
+                $this->tpl->assign('numTestCases', count($testCases));
                 $this->tpl->assign('statusLabels', $this->ticketService->getStatusLabels());
                 $this->tpl->assign('ticketTypes', $this->ticketService->getTicketTypes());
                 $this->tpl->assign('efforts', $this->ticketService->getEffortLabels());
@@ -114,9 +118,9 @@ namespace leantime\domain\controllers {
                 $this->tpl->assign('profLevels', $this->profLevelService->getProfLevels());
 
                 $projectData = $this->projectService->getProject($ticket->projectId);
-				$this->tpl->assign('projectData', $projectData);
+                $this->tpl->assign('projectData', $projectData);
 
-				$comments = $this->commentService->getComments('ticket', $id, $_SESSION["projectsettings"]['commentOrder']);
+                $comments = $this->commentService->getComments('ticket', $id, $_SESSION["projectsettings"]['commentOrder']);
 
                 $this->tpl->assign('numComments', count($comments));
                 $this->tpl->assign('comments', $comments);
@@ -133,14 +137,15 @@ namespace leantime\domain\controllers {
                 $this->tpl->assign('numTicketResultFiles', count($resultFiles));
                 $this->tpl->assign('ticketResultFiles', $resultFiles);
 
-                $this->tpl->assign("timesheetValues", array("kind"=>"", "date"=>date($this->language->__("language.dateformat")), "hours"=>"", "description"=>""));
+                $this->tpl->assign("timesheetValues", array("kind" => "", "date" => date($this->language->__("language.dateformat")), "hours" => "", "description" => ""));
                 $this->tpl->assign("allTicketsOnThisProject", $this->ticketService->getAllTicketsForRoadmap());
 
                 $relatedTickets = $this->ticketService->getRelatedTickets($ticket->id);
                 $this->tpl->assign('relatedTickets', $relatedTickets);
                 $this->tpl->assign('numRelatedTickets', count($relatedTickets));
                 $this->tpl->assign('filesOfRelatedTickets', $this->ticketService->getFilesOfRelatedTickets($ticket->id));
-
+                $notRelatedTestCases = $this->ticketService->getTestCasesNotRelated($ticket->id, $ticket->projectId);
+                $this->tpl->assign('notRelatedTestCases', $notRelatedTestCases);
                 //TODO: Refactor thumbnail generation in file manager
                 $this->tpl->assign('imgExtensions', array('jpg', 'jpeg', 'png', 'gif', 'psd', 'bmp', 'tif', 'thm', 'yuv'));
 
@@ -162,7 +167,7 @@ namespace leantime\domain\controllers {
                 $id = (int)($_GET['id']);
                 $ticket = $this->ticketService->getTicket($id);
 
-                if($ticket === false) {
+                if ($ticket === false) {
                     $this->tpl->display('general.error');
                     return;
                 }
@@ -180,9 +185,9 @@ namespace leantime\domain\controllers {
                 //Add a comment
                 if (isset($params['comment']) === true) {
 
-                    if($this->commentService->addComment($_POST, "ticket", $id, $ticket)) {
+                    if ($this->commentService->addComment($_POST, "ticket", $id, $ticket)) {
                         $this->tpl->setNotification($this->language->__("notifications.comment_create_success"), "success");
-                    }else {
+                    } else {
                         $this->tpl->setNotification($this->language->__("notifications.comment_create_error"), "error");
                     }
                 }
@@ -192,9 +197,9 @@ namespace leantime\domain\controllers {
 
                     $result = $this->timesheetService->logTime($id, $params);
 
-                    if($result === true){
+                    if ($result === true) {
                         $this->tpl->setNotification($this->language->__("notifications.time_logged_success"), "success");
-                    }else{
+                    } else {
                         $this->tpl->setNotification($this->language->__($result['msg']), "error");
                     }
                 }
@@ -202,9 +207,9 @@ namespace leantime\domain\controllers {
                 //Save Substask
                 if (isset($params['subtaskSave']) === true) {
 
-                    if($this->ticketService->upsertSubtask($params, $ticket)) {
+                    if ($this->ticketService->upsertSubtask($params, $ticket)) {
                         $this->tpl->setNotification($this->language->__("notifications.subtask_saved"), "success");
-                    }else {
+                    } else {
                         $this->tpl->setNotification($this->language->__("notifications.subtask_save_error"), "error");
                     }
 
@@ -214,9 +219,9 @@ namespace leantime\domain\controllers {
                 if (isset($params['subtaskDelete']) === true) {
 
                     $subtaskId = $params['subtaskId'];
-                    if($this->ticketService->deleteTicket($subtaskId)) {
+                    if ($this->ticketService->deleteTicket($subtaskId)) {
                         $this->tpl->setNotification($this->language->__("notifications.subtask_deleted"), "success");
-                    }else {
+                    } else {
                         $this->tpl->setNotification($this->language->__("notifications.subtask_delete_error"), "error");
                     }
                 }
@@ -226,9 +231,9 @@ namespace leantime\domain\controllers {
 
                     $result = $this->ticketService->updateTicket($id, $params);
 
-                    if($result === true) {
+                    if ($result === true) {
                         $this->tpl->setNotification($this->language->__("notifications.ticket_saved"), "success");
-                    }else {
+                    } else {
                         $this->tpl->setNotification($this->language->__($result["msg"]), "error");
                     }
                 }
@@ -254,8 +259,28 @@ namespace leantime\domain\controllers {
                     }
                 }
 
+                if (isset($params["testCaseRelate"])) {
+                    $result = $this->ticketService->createRelationTicketTestcase($ticket->id, $params['relatedTestCase']);
+                    if ($result === true) {
+                        $this->tpl->setNotification($this->language->__("notifications.test_case_related"), "success");
+                    } else {
+                        $this->tpl->setNotification($this->language->__($result["msg"]), "error");
+                    }
+                    $this->tpl->redirect(BASE_URL . "/tickets/showTicket/" . $ticket->id . "#testCases");
+                }
 
-                $this->tpl->redirect(BASE_URL."/tickets/showKanban/");
+                if (isset($params["testCaseUnrelate"])) {
+                    $result = $this->ticketService->unrelateTestCase(
+                        $params['testCaseId'], $ticket->id, $ticket->projectId);
+                    if ($result === true) {
+                        $this->tpl->setNotification($this->language->__("notifications.test_case_unrelated"), "success");
+                    } else {
+                        $this->tpl->setNotification($this->language->__($result["msg"]), "error");
+                    }
+                    $this->tpl->redirect(BASE_URL . "/tickets/showTicket/" . $ticket->id . "#testCases");
+                }
+
+                $this->tpl->redirect(BASE_URL . "/tickets/showKanban/");
 
             } else {
 

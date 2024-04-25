@@ -11,7 +11,16 @@ $ticketTypes = $this->get('ticketTypes');
 $allTickets = $this->get('allTicketsOnThisProject');
 
 ?>
+<style>
+    .links-container {
+        display: flex;
+    }
 
+    .links-container a {
+        margin-right: 20px; /* Добавляет небольшой отступ между ссылками */
+    }
+
+</style>
 <div class="row-fluid">
     <div class="span7">
         <div class="row-fluid">
@@ -309,6 +318,23 @@ $allTickets = $this->get('allTicketsOnThisProject');
                     </div>
                 </div>
 
+
+            </div>
+        </div>
+
+        <div class="row-fluid">
+            <?php if (isset($ticket->id) && $ticket->id != '') : ?>
+            <div class="span12">
+                <h4 class="widgettitle title-light"><span
+                            class="iconfa iconfa-book"></span><?php echo $this->__('subtitle.test_cases'); ?></h4>
+                <div class="col-md-7">
+                    <div class="links-container">
+                    <a href="<?= BASE_URL. '/tickets/testCase?ticketId='. $ticket->id ?>"
+                       class="milestoneModal btn btn-primary"><?= $this->__("links.add_test_case"); ?></a>
+                    </div>
+                </div>
+
+            <?php endif; ?>
 
             </div>
         </div>

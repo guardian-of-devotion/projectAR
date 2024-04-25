@@ -88,6 +88,9 @@
             <li <?php if($module == 'reports') echo"class=' active '"; ?>>
                 <a href="<?=BASE_URL ?>/reports/show"><?=$this->__("menu.reports") ?></a>
             </li>
+            <li <?php if($module == 'test_case_Matrix') echo"class=' active '"; ?>>
+                <a href="<?=BASE_URL ?>/tickets/showMatrix/<?=$_SESSION['currentProject']?>"><?=$this->__("menu.testCaseMatrix") ?></a>
+            </li>
             <?php if ($login::userIsAtLeast("clientManager")) { ?>
                 <li <?php if($module == 'projects' && $action == 'showProject') echo"  class='active' "; ?>>
                     <a href="<?=BASE_URL ?>/projects/showProject/<?=$_SESSION['currentProject']?>"><?=$this->__("menu.project_settings") ?></a>

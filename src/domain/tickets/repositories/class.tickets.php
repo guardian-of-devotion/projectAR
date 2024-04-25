@@ -3,7 +3,8 @@
 /**
  * updated by
  * @author Regina Sharaeva
- */ 
+ */
+
 namespace leantime\domain\repositories {
 
     use leantime\core;
@@ -28,19 +29,19 @@ namespace leantime\domain\repositories {
          * @access private
          * @var    object
          */
-        private $db='';
+        private $db = '';
 
         /**
          * @access public
          * @var    array
          */
-        public $statusClasses = array('3' => 'label-info', '1' => 'label-important', '4' => 'label-warning', '2' => 'label-warning', '0' => 'label-success', "-1" =>"label-default");
+        public $statusClasses = array('3' => 'label-info', '1' => 'label-important', '4' => 'label-warning', '2' => 'label-warning', '0' => 'label-success', "-1" => "label-default");
 
         /**
          * @access public
          * @var    array
          */
-        public $statusNumByKey = array('NEW' => 3, 'ERROR' => 1, 'INPROGRESS' => 4, 'APPROVAL' => 2, 'FINISHED' => 0, "ARCHIVED" =>-1);
+        public $statusNumByKey = array('NEW' => 3, 'ERROR' => 1, 'INPROGRESS' => 4, 'APPROVAL' => 2, 'FINISHED' => 0, "ARCHIVED" => -1);
 
 
         /**
@@ -67,7 +68,7 @@ namespace leantime\domain\repositories {
          * @access public
          * @var    array
          */
-        public $efforts = array('1' => 'XXS', '2' => 'XS', 3=>'S', '5'=>'M', 8 => 'L', 13 => 'XL', 21 => 'XXL');
+        public $efforts = array('1' => 'XXS', '2' => 'XS', 3 => 'S', '5' => 'M', 8 => 'L', 13 => 'XL', 21 => 'XXL');
 
         /**
          * @access public
@@ -103,7 +104,7 @@ namespace leantime\domain\repositories {
          * @access private
          * @var    unknown_type
          */
-        public $numPages='';
+        public $numPages = '';
 
         /**
          * @access public
@@ -130,11 +131,11 @@ namespace leantime\domain\repositories {
         public function getStateLabels()
         {
 
-            if(isset($_SESSION["projectsettings"]["ticketlabels"])) {
+            if (isset($_SESSION["projectsettings"]["ticketlabels"])) {
 
                 return $_SESSION["projectsettings"]["ticketlabels"];
 
-            }else{
+            } else {
 
                 $sql = "SELECT
 						value
@@ -142,7 +143,7 @@ namespace leantime\domain\repositories {
 				LIMIT 1";
 
                 $stmn = $this->db->database->prepare($sql);
-                $stmn->bindvalue(':key', "projectsettings.".$_SESSION['currentProject'].".ticketlabels", PDO::PARAM_STR);
+                $stmn->bindvalue(':key', "projectsettings." . $_SESSION['currentProject'] . ".ticketlabels", PDO::PARAM_STR);
 
                 $stmn->execute();
                 $values = $stmn->fetch();
@@ -151,7 +152,7 @@ namespace leantime\domain\repositories {
                 $labels = array();
 
                 //preseed state labels with default values
-                foreach($this->statusList as $key=>$label) {
+                foreach ($this->statusList as $key => $label) {
                     $labels[$key] = array(
                         "name" => $this->language->__($label),
                         "class" => $this->statusClasses[$key]
@@ -159,14 +160,14 @@ namespace leantime\domain\repositories {
                 }
 
                 //Override the state values that are in the db
-                if($values !== false) {
+                if ($values !== false) {
 
-                    foreach(unserialize($values['value']) as $key=>$label) {
+                    foreach (unserialize($values['value']) as $key => $label) {
 
                         //Custom key in the database represents the string value. Needs to be translated to numeric status value
-                        if(!is_int($key)) {
+                        if (!is_int($key)) {
                             $numericKey = $this->statusNumByKey[$key];
-                        }else{
+                        } else {
                             $numericKey = $key;
                         }
 
@@ -185,7 +186,8 @@ namespace leantime\domain\repositories {
             }
         }
 
-        public function getStatusList() {
+        public function getStatusList()
+        {
             return $this->statusList;
         }
 
@@ -205,7 +207,7 @@ namespace leantime\domain\repositories {
             return $values;
         }
 
-        public function getUsersTickets($id,$limit)
+        public function getUsersTickets($id, $limit)
         {
 
             $sql = "SELECT
@@ -240,13 +242,13 @@ namespace leantime\domain\repositories {
 				GROUP BY ticket.id
 				ORDER BY ticket.id DESC";
 
-            if($limit > -1) {
+            if ($limit > -1) {
                 $sql .= " LIMIT :limit";
             }
 
             $stmn = $this->db->database->prepare($sql);
             $stmn->bindValue(':id', $id, PDO::PARAM_STR);
-            if($limit > -1) {
+            if ($limit > -1) {
                 $stmn->bindValue(':limit', $limit, PDO::PARAM_INT);
             }
             $stmn->execute();
@@ -326,7 +328,7 @@ ORDER BY ticket.id DESC";
 				(
 					SELECT 
 						zp_relationuserproject.projectId 
-					FROM zp_relationuserproject WHERE userId = ".$_SESSION['userdata']["id"]."
+					FROM zp_relationuserproject WHERE userId = " . $_SESSION['userdata']["id"] . "
 				)";
 
             $stmn = $this->db->database->prepare($sql);
@@ -347,7 +349,7 @@ ORDER BY ticket.id DESC";
          * @param  $sort
          * @return array | bool
          */
-        public function getAllBySearchCriteria($searchCriteria, $sort='standard')
+        public function getAllBySearchCriteria($searchCriteria, $sort = 'standard')
         {
 
             $query = "SELECT
@@ -399,119 +401,120 @@ ORDER BY ticket.id DESC";
 						LEFT JOIN zp_sprints ON zp_tickets.sprint = zp_sprints.id
 						LEFT JOIN zp_tickets AS milestone ON zp_tickets.dependingTicketId = milestone.id AND zp_tickets.dependingTicketId > 0 AND milestone.type = 'milestone'
 						LEFT JOIN zp_timesheets AS timesheets ON zp_tickets.id = timesheets.ticketId
-						WHERE zp_relationuserproject.userId = :userId AND zp_tickets.type <> 'subtask' AND zp_tickets.type <> 'milestone'";
+						WHERE zp_relationuserproject.userId = :userId AND zp_tickets.type <> 'subtask' AND zp_tickets.type <> 'milestone'
+						AND zp_tickets.type <> 'testcase'";
 
-            if($_SESSION['currentProject']  != "") {
+            if ($_SESSION['currentProject'] != "") {
                 $query .= " AND zp_tickets.projectId = :projectId";
             }
 
 
-            if($searchCriteria["users"]  != "") {
+            if ($searchCriteria["users"] != "") {
                 $editorIdIn = core\db::arrayToPdoBindingString("users", count(explode(",", $searchCriteria["users"])));
-                $query .= " AND zp_tickets.editorId IN(" . $editorIdIn. ")";
+                $query .= " AND zp_tickets.editorId IN(" . $editorIdIn . ")";
             }
 
-            if($searchCriteria["milestone"]  != "") {
+            if ($searchCriteria["milestone"] != "") {
                 $query .= " AND zp_tickets.dependingTicketId = :milestoneId";
             }
 
 
-            if($searchCriteria["status"]  != "") {
+            if ($searchCriteria["status"] != "") {
 
                 $statusArray = explode(",", $searchCriteria['status']);
 
-                if(array_search("not_done", $statusArray) !== false) {
+                if (array_search("not_done", $statusArray) !== false) {
                     $query .= " AND zp_tickets.status > 0";
-                }else {
+                } else {
                     $statusIn = core\db::arrayToPdoBindingString("status", count(explode(",", $searchCriteria["status"])));
-                    $query .= " AND zp_tickets.status IN(".$statusIn.")";
+                    $query .= " AND zp_tickets.status IN(" . $statusIn . ")";
                 }
 
-            }else{
+            } else {
 
                 $query .= " AND zp_tickets.status <> -1";
 
             }
 
-            if($searchCriteria["type"]  != "") {
+            if ($searchCriteria["type"] != "") {
                 $query .= " AND LOWER(zp_tickets.type) = LOWER(:searchType) ";
             }
 
-            if($searchCriteria["priority"]  != "") {
+            if ($searchCriteria["priority"] != "") {
                 $query .= " AND LOWER(zp_tickets.priority) = LOWER(:searchPriority) ";
             }
 
-            if($searchCriteria["marker"]  != "") {
+            if ($searchCriteria["marker"] != "") {
                 $query .= " AND zp_tickets.markerId = :markerId";
             }
 
-            if($searchCriteria["term"]  != "") {
+            if ($searchCriteria["term"] != "") {
                 $query .= " AND (FIND_IN_SET(:termStandard, zp_tickets.tags) OR zp_tickets.headline LIKE :termWild OR zp_tickets.description LIKE :termWild OR zp_tickets.id LIKE :termWild)";
             }
 
-            if($searchCriteria["sprint"]  > 0 && $searchCriteria["sprint"]  != "all") {
+            if ($searchCriteria["sprint"] > 0 && $searchCriteria["sprint"] != "all") {
                 $sprintIn = core\db::arrayToPdoBindingString("sprint", count(explode(",", $searchCriteria["sprint"])));
-                $query .= " AND zp_tickets.sprint IN(".$sprintIn.")";
+                $query .= " AND zp_tickets.sprint IN(" . $sprintIn . ")";
             }
 
-            if($searchCriteria["sprint"]  == "backlog" ) {
+            if ($searchCriteria["sprint"] == "backlog") {
                 $query .= " AND (zp_tickets.sprint IS NULL OR zp_tickets.sprint = '' OR zp_tickets.sprint = -1)";
             }
 
             $query .= " GROUP BY zp_tickets.id ";
 
-            if($sort == "standard") {
+            if ($sort == "standard") {
                 $query .= " ORDER BY zp_tickets.sortindex ASC, zp_tickets.id DESC";
-            }else if($sort == "kanbansort") {
+            } else if ($sort == "kanbansort") {
                 $query .= " ORDER BY zp_tickets.kanbanSortIndex ASC, zp_tickets.id DESC";
-            }else if($sort == "duedate") {
+            } else if ($sort == "duedate") {
                 $query .= " ORDER BY zp_tickets.dateToFinish ASC, zp_tickets.sortindex ASC, zp_tickets.id DESC";
             }
 
             $stmn = $this->db->database->prepare($query);
             $stmn->bindValue(':userId', $_SESSION['userdata']['id'], PDO::PARAM_INT);
 
-            if($_SESSION['currentProject'] != "") {
+            if ($_SESSION['currentProject'] != "") {
 
                 $stmn->bindValue(':projectId', $_SESSION['currentProject'], PDO::PARAM_INT);
             }
 
-            if($searchCriteria["milestone"]  != "") {
+            if ($searchCriteria["milestone"] != "") {
                 $stmn->bindValue(':milestoneId', $searchCriteria["milestone"], PDO::PARAM_INT);
             }
 
-            if($searchCriteria["type"]  != "") {
+            if ($searchCriteria["type"] != "") {
                 $stmn->bindValue(':searchType', $searchCriteria["type"], PDO::PARAM_STR);
             }
-            if($searchCriteria["priority"]  != "") {
+            if ($searchCriteria["priority"] != "") {
                 $stmn->bindValue(':searchPriority', $searchCriteria["priority"], PDO::PARAM_STR);
             }
 
-            if($searchCriteria["marker"]  != "") {
+            if ($searchCriteria["marker"] != "") {
                 $stmn->bindValue(':markerId', $searchCriteria["marker"], PDO::PARAM_STR);
             }
 
-            if($searchCriteria["users"]  != "") {
-                foreach(explode(",", $searchCriteria["users"]) as $key => $user) {
+            if ($searchCriteria["users"] != "") {
+                foreach (explode(",", $searchCriteria["users"]) as $key => $user) {
                     $stmn->bindValue(":users" . $key, $user, PDO::PARAM_STR);
                 }
             }
 
             $statusArray = explode(",", $searchCriteria['status']);
-            if($searchCriteria["status"]  != "" && array_search("not_done", $statusArray) === false) {
-                foreach(explode(",", $searchCriteria["status"]) as $key => $status) {
+            if ($searchCriteria["status"] != "" && array_search("not_done", $statusArray) === false) {
+                foreach (explode(",", $searchCriteria["status"]) as $key => $status) {
                     $stmn->bindValue(":status" . $key, $status, PDO::PARAM_STR);
                 }
             }
 
-            if($searchCriteria["sprint"]  > 0 && $searchCriteria["sprint"]  != "all") {
-                foreach(explode(",", $searchCriteria["sprint"]) as $key => $sprint) {
+            if ($searchCriteria["sprint"] > 0 && $searchCriteria["sprint"] != "all") {
+                foreach (explode(",", $searchCriteria["sprint"]) as $key => $sprint) {
                     $stmn->bindValue(":sprint" . $key, $sprint, PDO::PARAM_STR);
                 }
             }
 
-            if($searchCriteria["term"]  != "") {
-                $termWild = "%".$searchCriteria["term"]."%";
+            if ($searchCriteria["term"] != "") {
+                $termWild = "%" . $searchCriteria["term"] . "%";
                 $stmn->bindValue(':termWild', $termWild, PDO::PARAM_STR);
                 $stmn->bindValue(':termStandard', $searchCriteria["term"], PDO::PARAM_STR);
             }
@@ -637,6 +640,7 @@ ORDER BY ticket.id DESC";
                         LEFT JOIN zp_marker AS marker ON zp_tickets.markerId = marker.id
 					WHERE 
 						zp_tickets.projectId = :projectId and zp_tickets.type <> 'milestone' and zp_tickets.type <> 'subtask'
+					    and zp_tickets.type <> 'testcase'
 					GROUP BY
 						zp_tickets.id";
 
@@ -777,7 +781,7 @@ ORDER BY ticket.id DESC";
 
         }
 
-        public function getAllMilestones($projectId, $includeArchived =false, $sortBy="headline")
+        public function getAllMilestones($projectId, $includeArchived = false, $sortBy = "headline")
         {
 
             $query = "SELECT
@@ -849,19 +853,18 @@ ORDER BY ticket.id DESC";
 					WHERE 
 						zp_tickets.type = 'milestone' AND zp_tickets.projectId = :projectId";
 
-            if($includeArchived === false) {
+            if ($includeArchived === false) {
                 $query .= " AND zp_tickets.status > -1 ";
             }
 
-				$query .= "	GROUP BY
+            $query .= "	GROUP BY
 						zp_tickets.id, progressTickets.dependingTicketId";
 
-                if($sortBy == "date") {
-                    $query .= "	ORDER BY zp_tickets.editFrom ASC";
-                }else if($sortBy == "headline") {
-                    $query .= "	ORDER BY zp_tickets.headline ASC";
-                }
-
+            if ($sortBy == "date") {
+                $query .= "	ORDER BY zp_tickets.editFrom ASC";
+            } else if ($sortBy == "headline") {
+                $query .= "	ORDER BY zp_tickets.headline ASC";
+            }
 
 
             $stmn = $this->db->database->prepare($query);
@@ -897,11 +900,11 @@ ORDER BY ticket.id DESC";
         public function getPriority($priority)
         {
 
-            if($priority !== null && $priority !== '') {
+            if ($priority !== null && $priority !== '') {
 
                 return $this->priority[$priority];
 
-            }else{
+            } else {
 
                 return $this->priority[1];
 
@@ -936,7 +939,7 @@ ORDER BY ticket.id DESC";
 
             if (count($result) > 0) {
                 return true;
-            }else{
+            } else {
                 return false;
             }
 
@@ -976,6 +979,7 @@ ORDER BY ticket.id DESC";
                     LEFT JOIN zp_marker as marker on zp_tickets.markerId = marker.id
 					WHERE 
 						zp_tickets.type <> 'milestone' AND zp_tickets.type <> 'subtask' AND zp_tickets.projectId = :projectId
+					and zp_tickets.type <> 'testcase'
                     ORDER BY
 					    zp_tickets.date ASC
 					LIMIT 1";
@@ -1000,7 +1004,8 @@ ORDER BY ticket.id DESC";
 					FROM 
 						zp_tickets
 					WHERE 
-						zp_tickets.type <> 'milestone' AND zp_tickets.type <> 'subtask' AND zp_tickets.projectId = :projectId
+						zp_tickets.type <> 'milestone' AND zp_tickets.type <> 'subtask' AND zp_tickets.type <> 'testcase'
+					  AND zp_tickets.projectId = :projectId
                     ORDER BY
 					    zp_tickets.date ASC
 					LIMIT 1";
@@ -1026,6 +1031,7 @@ ORDER BY ticket.id DESC";
 						zp_tickets
 					WHERE 
 						zp_tickets.type <> 'milestone' AND zp_tickets.type <> 'subtask' AND zp_tickets.projectId = :projectId
+					    AND zp_tickets.type <> 'testcase'
 						AND zp_tickets.status < 1
                     ORDER BY
 					    zp_tickets.date ASC
@@ -1051,7 +1057,8 @@ ORDER BY ticket.id DESC";
 					FROM 
 						zp_tickets
 					WHERE 
-						zp_tickets.type <> 'milestone' AND zp_tickets.type <> 'subtask' AND zp_tickets.projectId = :projectId
+						zp_tickets.type <> 'milestone' AND zp_tickets.type <> 'subtask' AND zp_tickets.type <> 'testcase' 
+					  AND zp_tickets.projectId = :projectId
 						AND zp_tickets.status < 1
                     ORDER BY
 					    zp_tickets.date ASC
@@ -1080,6 +1087,7 @@ ORDER BY ticket.id DESC";
 						zp_tickets
 					WHERE 
 						zp_tickets.type <> 'milestone' AND zp_tickets.type <> 'subtask' AND zp_tickets.projectId = :projectId
+						AND zp_tickets.type <> 'testcase'
                     ORDER BY
 					    zp_tickets.date ASC
 					LIMIT 1";
@@ -1125,7 +1133,7 @@ ORDER BY ticket.id DESC";
          * addTicket - add a Ticket with postback test
          *
          * @access public
-         * @param  array $values
+         * @param array $values
          * @return boolean|int
          */
         public function addTicket(array $values)
@@ -1211,9 +1219,9 @@ ORDER BY ticket.id DESC";
             $stmn->bindValue(':editorId', $values['editorId'], PDO::PARAM_STR);
             $stmn->bindValue(':minProfLevelId', $values['minProfLevelId'], PDO::PARAM_STR);
 
-            if(isset($values['dependingTicketId'])) {
+            if (isset($values['dependingTicketId'])) {
                 $depending = $values['dependingTicketId'];
-            }else{
+            } else {
                 $depending = "";
             }
 
@@ -1228,15 +1236,15 @@ ORDER BY ticket.id DESC";
         }
 
 
-        public function patchTicket($id,$params)
+        public function patchTicket($id, $params)
         {
 
             $this->addTicketChange($_SESSION['userdata']['id'], $id, $params);
 
             $sql = "UPDATE zp_tickets SET ";
 
-            foreach($params as $key=>$value){
-                $sql .= "".core\db::sanitizeToColumnString($key)."=:".core\db::sanitizeToColumnString($key).", ";
+            foreach ($params as $key => $value) {
+                $sql .= "" . core\db::sanitizeToColumnString($key) . "=:" . core\db::sanitizeToColumnString($key) . ", ";
             }
 
             $sql .= "id=:id WHERE id=:id LIMIT 1";
@@ -1244,8 +1252,8 @@ ORDER BY ticket.id DESC";
             $stmn = $this->db->database->prepare($sql);
             $stmn->bindValue(':id', $id, PDO::PARAM_STR);
 
-            foreach($params as $key=>$value){
-                $stmn->bindValue(':'.core\db::sanitizeToColumnString($key), $value, PDO::PARAM_STR);
+            foreach ($params as $key => $value) {
+                $stmn->bindValue(':' . core\db::sanitizeToColumnString($key), $value, PDO::PARAM_STR);
             }
 
             $return = $stmn->execute();
@@ -1258,7 +1266,7 @@ ORDER BY ticket.id DESC";
          * updateTicket - Update Ticketinformation
          *
          * @access public
-         * @param  array $values
+         * @param array $values
          * @param  $id
          */
         public function updateTicket(array $values, $id)
@@ -1356,7 +1364,7 @@ ORDER BY ticket.id DESC";
 
         /**
          * @author Regina Sharaeva
-         */ 
+         */
         public function updateAssignee($id, $editorId)
         {
             $query = "UPDATE zp_tickets
@@ -1376,12 +1384,12 @@ ORDER BY ticket.id DESC";
             return $result;
         }
 
-        public function updateTicketStatus($ticketId, $status, $ticketSorting=-1)
+        public function updateTicketStatus($ticketId, $status, $ticketSorting = -1)
         {
 
-            $this->addTicketChange($_SESSION['userdata']['id'], $ticketId, array('status'=>$status));
+            $this->addTicketChange($_SESSION['userdata']['id'], $ticketId, array('status' => $status));
 
-            if($ticketSorting > -1) {
+            if ($ticketSorting > -1) {
 
                 $query = "UPDATE zp_tickets
 					SET 
@@ -1397,7 +1405,7 @@ ORDER BY ticket.id DESC";
                 $stmn->bindValue(':ticketId', $ticketId, PDO::PARAM_INT);
                 return $stmn->execute();
 
-            }else{
+            } else {
 
                 $query = "UPDATE zp_tickets
 					SET 
@@ -1420,7 +1428,7 @@ ORDER BY ticket.id DESC";
         /**
          * updated by
          * @author Regina Sharaeva
-         */ 
+         */
         public function deleteTicketMarkers($marker)
         {
             $query = "UPDATE zp_tickets
@@ -1430,7 +1438,7 @@ ORDER BY ticket.id DESC";
 
             $stmn = $this->db->database->prepare($query);
             $stmn->bindValue(':markerId', $marker, PDO::PARAM_INT);
-            
+
             $result = $stmn->execute();
 
             $stmn->closeCursor();
@@ -1439,7 +1447,7 @@ ORDER BY ticket.id DESC";
 
         }
 
-        public function addTicketChange($userId,$ticketId,$values)
+        public function addTicketChange($userId, $ticketId, $values)
         {
 
             $fields = array(
@@ -1455,7 +1463,7 @@ ORDER BY ticket.id DESC";
                 'toDate' => 'editTo',
                 'staging' => 'staging',
                 'production' => 'production',
-                'planHours'    => 'planHours',
+                'planHours' => 'planHours',
                 'status' => 'status');
 
             $changedFields = array();
@@ -1470,7 +1478,7 @@ ORDER BY ticket.id DESC";
             $stmn->closeCursor();
 
             // compare table
-            foreach($fields as $enum => $dbTable) {
+            foreach ($fields as $enum => $dbTable) {
 
                 if (isset($values[$dbTable]) === true && ($oldValues[$dbTable] != $values[$dbTable]) && ($values[$dbTable] != "")) {
                     $changedFields[$enum] = $values[$dbTable];
@@ -1586,7 +1594,7 @@ ORDER BY ticket.id DESC";
 
         /**
          * @author Regina Sharaeva
-         */ 
+         */
         public function updateTicketResult($id, $result)
         {
             $sql = "UPDATE zp_tickets t
@@ -1606,7 +1614,7 @@ ORDER BY ticket.id DESC";
 
         /**
          * @author Regina Sharaeva
-         */ 
+         */
         public function updateRelatedTicket($id, $relatedTicketId)
         {
             $sql = "UPDATE zp_tickets t
@@ -1663,6 +1671,280 @@ ORDER BY ticket.id DESC";
             $stmn = $this->db->database->prepare($sql);
             $stmn->bindValue(':projectId', $projectId, PDO::PARAM_STR);
 
+            $stmn->execute();
+            $values = $stmn->fetchAll();
+            $stmn->closeCursor();
+
+            return $values;
+        }
+
+        public function addTestCaseInfo($values)
+        {
+            $sql = <<<SQL
+INSERT INTO zp_testcase_information (testcase_id, precondition, postcondition, steps)
+VALUES (:testcaseId, :precondition, :postcondition, :steps)
+
+SQL;
+            $stmn = $this->db->database->prepare($sql);
+            $stmn->bindValue(':testcaseId', $values['ticket_id']);
+            $stmn->bindValue(':precondition', $values['precondition']);
+            $stmn->bindValue(':postcondition', $values['postcondition']);
+            $stmn->bindValue(':steps', $values['steps']);
+
+            $stmn->execute();
+            $stmn->closeCursor();
+        }
+
+        public function createRelationTicketTestcase($ticketId, $testcaseId)
+        {
+            $sql = <<<SQL
+INSERT INTO zp_ticket_testcase_relation (ticket_id, testcase_id)
+VALUES (:ticketId, :testcaseId)
+SQL;
+            $stmn = $this->db->database->prepare($sql);
+            $stmn->bindValue(':ticketId', $ticketId);
+            $stmn->bindValue(':testcaseId', $testcaseId);
+            $result = $stmn->execute();
+            $stmn->closeCursor();
+            return $result;
+        }
+
+        public function getTestCaseData($testCaseId)
+        {
+            $sql = <<<SQL
+SELECT
+    zp_tickets.id,
+    zp_tickets.headline, 
+    zp_tickets.type,
+    zp_tickets.description,
+    zp_tickets.date,
+    zp_tickets.dateToFinish,
+    zp_tickets.projectId,
+    zp_tickets.priority,
+    zp_tickets.markerId,
+    zp_tickets.status,
+    zp_tickets.sprint,
+    zp_tickets.storypoints,
+    zp_tickets.hourRemaining,
+    zp_tickets.acceptanceCriteria,
+    zp_tickets.userId,
+    zp_tickets.editorId,
+    zp_tickets.minProfLevelId,
+    zp_tickets.planHours,
+    zp_tickets.tags,
+    zp_tickets.url,
+    zp_tickets.editFrom,
+    zp_tickets.editTo,
+    zp_tickets.dependingTicketId,					
+    zp_projects.name AS projectName,
+    zp_clients.name AS clientName,
+    zp_user.firstname AS userFirstname,
+    zp_user.lastname AS userLastname,
+    t3.firstname AS editorFirstname,
+    t3.lastname AS editorLastname,
+    marker.name AS markerName,
+    zp_tickets.relatedTicketId AS relatedTicketId,
+    zp_tickets.result AS result,
+    zti.precondition AS precondition,
+    zti.postcondition AS postcondition,
+    zti.steps AS steps
+FROM 
+    zp_tickets LEFT JOIN zp_projects ON zp_tickets.projectId = zp_projects.id
+    LEFT JOIN zp_clients ON zp_projects.clientId = zp_clients.id
+    LEFT JOIN zp_user ON zp_tickets.userId = zp_user.id
+    LEFT JOIN zp_user AS t3 ON zp_tickets.editorId = t3.id
+    LEFT JOIN zp_marker AS marker ON zp_tickets.markerId = marker.id
+    LEFT JOIN zp_testcase_information AS zti ON zti.testcase_id = zp_tickets.id
+WHERE 
+    zp_tickets.id = :ticketId			
+    AND zp_tickets.type = 'testcase'
+LIMIT 1
+SQL;
+
+            $stmn = $this->db->database->prepare($sql);
+            $stmn->bindValue(':ticketId', $testCaseId, PDO::PARAM_INT);
+            $stmn->execute();
+            $values = $stmn->fetchObject('\leantime\domain\models\tickets');
+            $stmn->closeCursor();
+
+            return $values;
+        }
+
+
+        public function getTestCasesByTicket($ticketId, $projectId)
+        {
+            $sql = <<<SQL
+SELECT
+    testcase_id,
+    ticket_id,
+    headline,
+    description,
+    status
+FROM zp_ticket_testcase_relation AS testcase_relation
+         LEFT JOIN zp_tickets AS ticket ON testcase_relation.testcase_id = ticket.id
+WHERE testcase_relation.ticket_id = :ticketId
+  AND ticket.projectId = :projectId
+ORDER BY testcase_id;
+SQL;
+            $stmn = $this->db->database->prepare($sql);
+            $stmn->bindValue(':ticketId', $ticketId, PDO::PARAM_INT);
+            $stmn->bindValue(':projectId', $projectId, PDO::PARAM_INT);
+            $stmn->execute();
+            $values = $stmn->fetchAll();
+            $stmn->closeCursor();
+
+            return $values;
+        }
+
+        public function editTestCaseTicket($id, $values)
+        {
+            $sql = <<<SQL
+UPDATE zp_tickets
+SET 
+    headline = :headline,
+    description=:description,
+    status = :status,
+    editorId = :editorId
+WHERE id = :id;
+SQL;
+            $stmn = $this->db->database->prepare($sql);
+            $stmn->bindValue(':id', $id, PDO::PARAM_INT);
+            $stmn->bindValue(':headline', $values['headline'], PDO::PARAM_STR);
+            $stmn->bindValue(':status', $values['status'], PDO::PARAM_STR);
+            $stmn->bindValue(':editorId', $values['editorId'], PDO::PARAM_INT);
+            $stmn->bindValue(':description', $values['description'], PDO::PARAM_STR);
+            $result = $stmn->execute();
+
+            $stmn->closeCursor();
+
+            return $result;
+        }
+
+        public function updateTestCaseInfo($id, $values)
+        {
+            $sql = <<<SQL
+UPDATE zp_testcase_information
+SET 
+    precondition = :precondition,
+    postcondition = :postcondition,
+    steps = :steps
+WHERE testcase_id = :id;
+SQL;
+            $stmn = $this->db->database->prepare($sql);
+            $stmn->bindValue(':id', $id, PDO::PARAM_INT);
+            $stmn->bindValue(':precondition', $values['precondition'], PDO::PARAM_STR);
+            $stmn->bindValue(':postcondition', $values['postcondition'], PDO::PARAM_STR);
+            $stmn->bindValue(':steps', $values['steps'], PDO::PARAM_STR);
+
+            $result = $stmn->execute();
+            $stmn->closeCursor();
+
+            return $result;
+        }
+
+        public function delTestCaseInfo($id)
+        {
+            $query = "DELETE FROM zp_testcase_information WHERE testcase_id = :id";
+
+            $stmn = $this->db->database->prepare($query);
+            $stmn->bindValue(':id', $id, PDO::PARAM_INT);
+            $result = $stmn->execute();
+            $stmn->closeCursor();
+
+            return $result;
+        }
+
+        public function delAllTestCaseRelation($id)
+        {
+            $query = "DELETE FROM zp_ticket_testcase_relation WHERE testcase_id = :id";
+
+            $stmn = $this->db->database->prepare($query);
+            $stmn->bindValue(':id', $id, PDO::PARAM_INT);
+            $result = $stmn->execute();
+            $stmn->closeCursor();
+
+            return $result;
+
+        }
+
+        public function delTestCaseRelation($ticketId, $testCaseId)
+        {
+            $query = "DELETE FROM zp_ticket_testcase_relation WHERE testcase_id = :testcase_id 
+                                          AND ticket_id = :ticket_id";
+
+            $stmn = $this->db->database->prepare($query);
+            $stmn->bindValue(':ticket_id', $ticketId, PDO::PARAM_INT);
+            $stmn->bindValue(':testcase_id', $testCaseId, PDO::PARAM_INT);
+            $result = $stmn->execute();
+            $stmn->closeCursor();
+
+            return $result;
+
+        }
+
+        public function getAllTicketsHadTestCases($projectId)
+        {
+            $sql = <<<SQL
+SELECT DISTINCT
+    ticket.id,
+    ticket.headline,
+    ticket.is_in_matrix
+FROM zp_ticket_testcase_relation as trel
+         LEFT JOIN zp_tickets ticket on ticket.id = trel.ticket_id
+WHERE ticket.projectId = :projectId
+SQL;
+            $stmn = $this->db->database->prepare($sql);
+            $stmn->bindValue(':projectId', $projectId, PDO::PARAM_INT);
+            $stmn->execute();
+            $values = $stmn->fetchAll();
+            $stmn->closeCursor();
+
+            return $values;
+        }
+
+        public function getTestCaseMatrix($projectId)
+        {
+            $sql = <<<SQL
+SELECT
+t.id,
+testCase.headline,
+testCase.description,
+trel.testcase_id,
+trel.ticket_id,
+tinf.postcondition,
+tinf.precondition,
+tinf.steps
+FROM zp_ticket_testcase_relation trel
+         LEFT JOIN zp_tickets t ON trel.ticket_id = t.id
+         LEFT JOIN zp_tickets testCase ON testCase.id = trel.testcase_id
+         LEFT JOIN zp_testcase_information tinf ON tinf.testcase_id = trel.testcase_id
+WHERE t.projectId = :projectId AND t.is_in_matrix is TRUE;
+SQL;
+
+            $stmn = $this->db->database->prepare($sql);
+            $stmn->bindValue(':projectId', $projectId, PDO::PARAM_INT);
+            $stmn->execute();
+            $values = $stmn->fetchAll();
+            $stmn->closeCursor();
+
+            return $values;
+        }
+
+        public function getTestCasesNotRelated($ticketId, $projectId)
+        {
+            $sql = <<<SQL
+SELECT
+t.id,
+t.headline,
+t.description
+FROM zp_tickets t
+        LEFT JOIN zp_ticket_testcase_relation trel ON trel.testcase_id = t.id
+WHERE trel.ticket_id <> :ticketId  AND t.projectId = :projectId AND type = 'testCase'
+;
+SQL;
+            $stmn = $this->db->database->prepare($sql);
+            $stmn->bindValue(':projectId', $projectId, PDO::PARAM_INT);
+            $stmn->bindValue(':ticketId', $ticketId, PDO::PARAM_INT);
             $stmn->execute();
             $values = $stmn->fetchAll();
             $stmn->closeCursor();
