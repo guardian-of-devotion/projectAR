@@ -858,6 +858,8 @@ namespace leantime\core {
                 PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
             
+            CREATE INDEX is_in_matrix_index ON zp_tickets (is_in_matrix);
+            CREATE INDEX project_id_index ON zp_tickets (projectId);
             INSERT INTO `zp_efforts_hours` (`effort_value`, `effort_hours`, project_id) VALUES (1, 4, 3);
             INSERT INTO `zp_efforts_hours` (`effort_value`, `effort_hours`, project_id) VALUES (2, 8, 3);
             INSERT INTO `zp_efforts_hours` (`effort_value`, `effort_hours`, project_id) VALUES (3, 12, 3);

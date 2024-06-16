@@ -36,6 +36,8 @@ class showMatrix
             $this->tpl->assign('ticketHeaders', $ticketHeaders);
             $this->tpl->assign('currentProjectId', $currentProjectId);
             $this->tpl->assign('matrixElements', $this->ticketService->getMatrix($currentProjectId));
+            $this->tpl->assign('matrixStatistics', $this->ticketService->getMatrixStatistics($currentProjectId));
+            $this->tpl->assign("statusLabels", $this->ticketService->getStatusLabels());
             $this->tpl->display('tickets.showMatrix');
 
         } else {

@@ -35,13 +35,22 @@ namespace leantime\domain\repositories {
          * @access public
          * @var    array
          */
-        public $statusClasses = array('3' => 'label-info', '1' => 'label-important', '4' => 'label-warning', '2' => 'label-warning', '0' => 'label-success', "-1" => "label-default");
+        public $statusClasses = array('3' => 'label-info', '1' => 'label-important', '4' => 'label-warning', '2' => 'label-warning', '0' => 'label-success', "-1" => "label-default", "-2" => "label-default", "-3" => "label-default");
 
         /**
          * @access public
          * @var    array
          */
-        public $statusNumByKey = array('NEW' => 3, 'ERROR' => 1, 'INPROGRESS' => 4, 'APPROVAL' => 2, 'FINISHED' => 0, "ARCHIVED" => -1);
+        public $statusNumByKey = array(
+            'NEW' => 3,
+            'ERROR' => 1,
+            'INPROGRESS' => 4,
+            'APPROVAL' => 2,
+            'FINISHED' => 0,
+            "ARCHIVED" => -1,
+            "SUCCESSFUL" => -2,
+            "NOT_SUCCESSFUL" => -3
+        );
 
 
         /**
@@ -54,7 +63,9 @@ namespace leantime\domain\repositories {
             '4' => 'status.in_progress', //In Progress
             '2' => 'status.waiting_for_approval', //In Progress
             '0' => 'status.done', //Done
-            '-1' => 'status.archived' //Done
+            '-1' => 'status.archived', //Done
+            '-2' => 'status.successful',
+            '-3' => 'status.not_successful',
         );
 
         /**
@@ -1882,54 +1893,6 @@ SQL;
 
         }
 
-        public function getAllTicketsHadTestCases($projectId)
-        {
-            $sql = <<<SQL
-SELECT DISTINCT
-    ticket.id,
-    ticket.headline,
-    ticket.is_in_matrix
-FROM zp_ticket_testcase_relation as trel
-         LEFT JOIN zp_tickets ticket on ticket.id = trel.ticket_id
-WHERE ticket.projectId = :projectId
-SQL;
-            $stmn = $this->db->database->prepare($sql);
-            $stmn->bindValue(':projectId', $projectId, PDO::PARAM_INT);
-            $stmn->execute();
-            $values = $stmn->fetchAll();
-            $stmn->closeCursor();
-
-            return $values;
-        }
-
-        public function getTestCaseMatrix($projectId)
-        {
-            $sql = <<<SQL
-SELECT
-t.id,
-testCase.headline,
-testCase.description,
-trel.testcase_id,
-trel.ticket_id,
-tinf.postcondition,
-tinf.precondition,
-tinf.steps
-FROM zp_ticket_testcase_relation trel
-         LEFT JOIN zp_tickets t ON trel.ticket_id = t.id
-         LEFT JOIN zp_tickets testCase ON testCase.id = trel.testcase_id
-         LEFT JOIN zp_testcase_information tinf ON tinf.testcase_id = trel.testcase_id
-WHERE t.projectId = :projectId AND t.is_in_matrix is TRUE;
-SQL;
-
-            $stmn = $this->db->database->prepare($sql);
-            $stmn->bindValue(':projectId', $projectId, PDO::PARAM_INT);
-            $stmn->execute();
-            $values = $stmn->fetchAll();
-            $stmn->closeCursor();
-
-            return $values;
-        }
-
         public function getTestCasesNotRelated($ticketId, $projectId)
         {
             $sql = <<<SQL
@@ -1945,6 +1908,136 @@ SQL;
             $stmn = $this->db->database->prepare($sql);
             $stmn->bindValue(':projectId', $projectId, PDO::PARAM_INT);
             $stmn->bindValue(':ticketId', $ticketId, PDO::PARAM_INT);
+            $stmn->execute();
+            $values = $stmn->fetchAll();
+            $stmn->closeCursor();
+
+            return $values;
+        }
+
+        public function getAllTicketsHadTestCases($projectId)
+        {
+            $sql = <<<SQL
+SELECT DISTINCT
+    ticket.id,
+    ticket.headline,
+    ticket.is_in_matrix
+FROM zp_tickets ticket 
+WHERE ticket.projectId = :projectId and ticket.type <> 'testcase'
+SQL;
+            $stmn = $this->db->database->prepare($sql);
+            $stmn->bindValue(':projectId', $projectId, PDO::PARAM_INT);
+            $stmn->execute();
+            $values = $stmn->fetchAll();
+            $stmn->closeCursor();
+
+            return $values;
+        }
+
+        public function getTestCaseMatrix($projectId)
+        {
+            $sql = <<<SQL
+SELECT
+    t.id,
+    t.status,
+    testCase.headline,
+    testCase.description,
+    testCase.status AS tcstatus,
+    trel.testcase_id,
+    trel.ticket_id,
+    tinf.postcondition,
+    tinf.precondition,
+    tinf.steps
+FROM zp_tickets t
+         LEFT JOIN zp_ticket_testcase_relation trel ON trel.ticket_id = t.id
+         LEFT JOIN zp_tickets testCase ON testCase.id = trel.testcase_id
+         LEFT JOIN zp_testcase_information tinf ON tinf.testcase_id = trel.testcase_id
+WHERE t.projectId = :projectId AND t.is_in_matrix is TRUE;
+SQL;
+
+            $stmn = $this->db->database->prepare($sql);
+            $stmn->bindValue(':projectId', $projectId, PDO::PARAM_INT);
+            $stmn->execute();
+            $values = $stmn->fetchAll();
+            $stmn->closeCursor();
+
+            return $values;
+        }
+
+        public function getMatrixStatistics($projectId)
+        {
+            $sql = <<<SQL
+SELECT 'tickets_in_matrix_total'  AS task_type,
+       COUNT(*) AS total_records
+FROM zp_tickets
+WHERE projectId = :projectId
+  AND is_in_matrix IS TRUE
+  AND type <> 'testcase'
+
+UNION ALL
+
+SELECT 'tickets_in_matrix_successful'                  AS task_type,
+       COUNT(DISTINCT successful.id) AS successful_tasks
+FROM (SELECT t.id
+      FROM zp_tickets t
+               LEFT JOIN zp_ticket_testcase_relation trel ON trel.ticket_id = t.id AND t.projectId = :projectId
+               LEFT JOIN zp_tickets testCase ON testCase.id = trel.testcase_id
+      GROUP BY t.id
+      HAVING COUNT(testCase.status) > 0
+         AND MIN(testCase.status) != -3
+         AND MAX(testCase.status) = -2) AS successful
+
+UNION ALL
+
+SELECT 'tickets_in_matrix_not_successful'                  AS task_type,
+       COUNT(DISTINCT not_successful.id) AS not_successful_tasks
+FROM (SELECT t.id
+      FROM zp_tickets t
+               LEFT JOIN zp_ticket_testcase_relation trel ON trel.ticket_id = t.id AND t.projectId = :projectId
+               LEFT JOIN zp_tickets testCase ON testCase.id = trel.testcase_id
+      GROUP BY t.id
+      HAVING COUNT(testCase.status) > 0
+         AND MIN(testCase.status) = -3
+         AND MAX(testCase.status) != 4) AS not_successful
+
+UNION ALL
+
+SELECT 'tickets_in_matrix_processed'                  AS task_type,
+       COUNT(DISTINCT processed.id) AS processed_tasks
+FROM (SELECT t.id
+      FROM zp_tickets t
+               LEFT JOIN zp_ticket_testcase_relation trel ON trel.ticket_id = t.id AND t.projectId = :projectId
+               LEFT JOIN zp_tickets testCase ON testCase.id = trel.testcase_id
+      GROUP BY t.id
+      HAVING COUNT(testCase.status) > 0
+         AND MAX(testCase.status) = 4) AS processed
+
+UNION ALL
+
+SELECT 'tickets_in_matrix_total_with_testcases'                  AS task_type,
+       COUNT(DISTINCT total_with_testcases.id) AS total_with_testcases
+FROM (SELECT t.id
+      FROM zp_tickets t
+               LEFT JOIN zp_ticket_testcase_relation trel ON trel.ticket_id = t.id AND t.projectId = :projectId
+               LEFT JOIN zp_tickets testCase ON testCase.id = trel.testcase_id
+      GROUP BY t.id
+      HAVING COUNT(testCase.status) > 0) as total_with_testcases
+
+UNION ALL
+
+SELECT 'tickets_in_matrix_total_without_testcases' AS task_type,
+       COUNT(*)                  AS total_records
+FROM zp_tickets t
+         LEFT JOIN zp_ticket_testcase_relation trel ON trel.ticket_id = t.id
+         LEFT JOIN zp_tickets testCase ON testCase.id = trel.testcase_id
+WHERE t.projectId = :projectId
+  AND t.is_in_matrix IS TRUE
+  AND t.type <> 'testcase'
+  AND testCase.id IS NULL
+GROUP BY t.id
+SQL;
+            $stmn = $this->db->database->prepare($sql);
+            $stmn->bindValue(':projectId', $projectId, PDO::PARAM_INT);
             $stmn->execute();
             $values = $stmn->fetchAll();
             $stmn->closeCursor();

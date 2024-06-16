@@ -1096,6 +1096,11 @@ namespace leantime\domain\services {
 
             return $result;
         }
+
+        public function getMatrixStatistics($projectId)
+        {
+            return $this->ticketRepository->getMatrixStatistics($projectId);
+        }
     }
 
 }

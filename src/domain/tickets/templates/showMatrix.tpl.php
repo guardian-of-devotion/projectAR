@@ -4,6 +4,8 @@ defined('RESTRICTED') or die('Restricted access');
 $ticketsHeaders = $this->get('ticketHeaders');
 $currentProjectId = $this->get('currentProjectId');
 $matrixElements = $this->get('matrixElements');
+$matrixStatistics = $this->get('matrixStatistics');
+
 
 ?>
 
@@ -22,11 +24,15 @@ $matrixElements = $this->get('matrixElements');
 
         <?php echo $this->displayNotification(); ?>
 
+         <div>
+             <button>   </button>
+         </div>
         <div class="tabbedwidget tab-primary ticketTabs" style="visibility:hidden;">
 
             <ul>
                 <li><a href="#testCaseTicketsChoose"><?php echo $this->__("tabs.testCaseTicketsChoose") ?></a></li>
                 <li><a href="#testCaseMatrix"><?php echo $this->__('tabs.testCaseMatrix') ?></a></li>
+                <li><a href="#testCaseMatrixStatistics"><?php echo $this->__('tabs.testCaseMatrixInformation') ?></a></li>
             </ul>
 
             <div id="testCaseTicketsChoose">
@@ -37,6 +43,10 @@ $matrixElements = $this->get('matrixElements');
 
             <div id="testCaseMatrix">
                     <?php $this->displaySubmodule('tickets-testCaseMatrix') ?>
+            </div>
+
+            <div id="testCaseMatrixStatistics">
+                    <?php $this->displaySubmodule('tickets-testCaseMatrixStatistics') ?>
             </div>
 
         </div>
