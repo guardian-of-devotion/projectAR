@@ -1991,7 +1991,8 @@ UNION ALL
 
 SELECT 'tickets_in_matrix_not_successful'                  AS task_type,
        COUNT(DISTINCT not_successful.id) AS not_successful_tasks
-FROM (SELECT t.id
+FROM (SELECT t.id,
+             t.is_in_matrix
       FROM zp_tickets t
                LEFT JOIN zp_ticket_testcase_relation trel ON trel.ticket_id = t.id AND t.projectId = :projectId
                LEFT JOIN zp_tickets testCase ON testCase.id = trel.testcase_id
@@ -1999,42 +2000,48 @@ FROM (SELECT t.id
       HAVING COUNT(testCase.status) > 0
          AND MIN(testCase.status) = -3
          AND MAX(testCase.status) != 4) AS not_successful
+WHERE is_in_matrix = TRUE
 
 UNION ALL
 
 SELECT 'tickets_in_matrix_processed'                  AS task_type,
        COUNT(DISTINCT processed.id) AS processed_tasks
-FROM (SELECT t.id
+FROM (SELECT t.id,
+             t.is_in_matrix
       FROM zp_tickets t
                LEFT JOIN zp_ticket_testcase_relation trel ON trel.ticket_id = t.id AND t.projectId = :projectId
                LEFT JOIN zp_tickets testCase ON testCase.id = trel.testcase_id
       GROUP BY t.id
       HAVING COUNT(testCase.status) > 0
          AND MAX(testCase.status) = 4) AS processed
+WHERE is_in_matrix = true
 
 UNION ALL
 
 SELECT 'tickets_in_matrix_total_with_testcases'                  AS task_type,
        COUNT(DISTINCT total_with_testcases.id) AS total_with_testcases
-FROM (SELECT t.id
+FROM (SELECT t.id,
+             t.is_in_matrix
       FROM zp_tickets t
                LEFT JOIN zp_ticket_testcase_relation trel ON trel.ticket_id = t.id AND t.projectId = :projectId
                LEFT JOIN zp_tickets testCase ON testCase.id = trel.testcase_id
       GROUP BY t.id
       HAVING COUNT(testCase.status) > 0) as total_with_testcases
+WHERE is_in_matrix = true
 
 UNION ALL
 
 SELECT 'tickets_in_matrix_total_without_testcases' AS task_type,
-       COUNT(*)                  AS total_records
-FROM zp_tickets t
-         LEFT JOIN zp_ticket_testcase_relation trel ON trel.ticket_id = t.id
-         LEFT JOIN zp_tickets testCase ON testCase.id = trel.testcase_id
-WHERE t.projectId = :projectId
-  AND t.is_in_matrix IS TRUE
-  AND t.type <> 'testcase'
-  AND testCase.id IS NULL
-GROUP BY t.id
+       coalesce(COUNT(id), 0)    AS total_records
+FROM (SELECT t.id
+      FROM zp_tickets t
+               LEFT JOIN zp_ticket_testcase_relation trel ON trel.ticket_id = t.id
+               LEFT JOIN zp_tickets testCase ON testCase.id = trel.testcase_id
+      WHERE t.projectId = :projectId
+        AND t.is_in_matrix IS TRUE
+        AND t.type <> 'testcase'
+        AND testCase.id is NULL
+      GROUP BY t.id) as total_without_testcases
 SQL;
             $stmn = $this->db->database->prepare($sql);
             $stmn->bindValue(':projectId', $projectId, PDO::PARAM_INT);
